@@ -106,43 +106,43 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
 
       {/* Simple White Glassmorphism Floating Tips Modal */}
       {showControlsDrawer && (
-        <div className="fixed top-16 left-4 right-4 sm:top-20 sm:left-auto sm:right-6 sm:w-96 z-50 bg-black/40 backdrop-blur-md border border-white/20 p-5 rounded-2xl shadow-2xl animate-fade-in text-white max-h-[80vh] overflow-y-auto font-sans">
+        <div className="fixed top-16 left-4 right-4 sm:top-20 sm:left-auto sm:right-6 sm:w-96 z-50 bg-black/50 backdrop-blur-xl border border-white/20 p-6 sm:p-7 rounded-3xl shadow-2xl animate-fade-in text-white max-h-[82vh] overflow-y-auto font-sans">
           {/* Header Bar */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
-            <h3 className="font-bold text-sm sm:text-base text-white tracking-wide">{title} — Tips</h3>
+          <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-5">
+            <h3 className="font-bold text-base text-white tracking-tight">{title} — Tips</h3>
             <button
               onClick={() => setShowControlsDrawer(false)}
-              className="p-1.5 hover:bg-white/10 rounded-lg text-zinc-300 hover:text-white transition cursor-pointer"
+              className="p-2 hover:bg-white/10 active:bg-white/20 rounded-xl text-zinc-300 hover:text-white transition cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
               title="Close"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="space-y-4 text-xs sm:text-sm text-zinc-200">
+          <div className="space-y-5">
             {/* Controls */}
-            <div className="space-y-1">
-              <div className="font-semibold text-white text-xs">Controls</div>
-              <p className="text-zinc-300 leading-relaxed">
+            <div className="space-y-2">
+              <div className="font-bold text-xs uppercase tracking-wider text-zinc-300">Controls</div>
+              <p className="text-zinc-200 text-xs sm:text-sm font-normal leading-relaxed">
                 {controlsInfo || 'Use Onscreen Touch Controls or Keyboard Arrow Keys'}
               </p>
             </div>
 
             {/* Pro Tip */}
             {proTip && (
-              <div className="space-y-1 pt-3 border-t border-white/10">
-                <div className="font-semibold text-white text-xs">Pro Tip</div>
-                <p className="text-zinc-300 leading-relaxed">
+              <div className="space-y-2 pt-4 border-t border-white/15">
+                <div className="font-bold text-xs uppercase tracking-wider text-zinc-300">Pro Tip</div>
+                <p className="text-zinc-200 text-xs sm:text-sm font-normal leading-relaxed">
                   {proTip}
                 </p>
               </div>
             )}
 
             {/* Keyboard Shortcuts */}
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-zinc-400">
-              <span><strong className="text-white font-medium">R</strong> Restart</span>
-              <span><strong className="text-white font-medium">F</strong> Fullscreen</span>
-              <span><strong className="text-white font-medium">C</strong> Toggle Tips</span>
+            <div className="pt-4 border-t border-white/15 flex items-center justify-between text-xs text-zinc-400 font-medium">
+              <span><strong className="text-white font-semibold">R</strong> Restart</span>
+              <span><strong className="text-white font-semibold">F</strong> Fullscreen</span>
+              <span><strong className="text-white font-semibold">C</strong> Toggle Tips</span>
             </div>
           </div>
         </div>
