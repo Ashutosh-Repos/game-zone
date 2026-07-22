@@ -1,6 +1,10 @@
-'use client';
-
+import type { Metadata } from 'next';
 import GameViewerModal from '@/components/GameViewerModal';
+
+export const metadata: Metadata = {
+  title: 'Breakout Deluxe — GameZone',
+  description: 'Play classic Breakout brick breaker game online for free.',
+};
 
 export default function BreakoutPage() {
   return (

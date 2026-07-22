@@ -1,6 +1,10 @@
-'use client';
-
+import type { Metadata } from 'next';
 import GameViewerModal from '@/components/GameViewerModal';
+
+export const metadata: Metadata = {
+  title: 'Sinuous — GameZone',
+  description: 'Play particle evasion Sinuous arcade game online for free.',
+};
 
 export default function SinuousPage() {
   return (
