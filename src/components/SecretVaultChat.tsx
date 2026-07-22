@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { EyeOff, Send, Mic, MicOff, CheckCheck, Check, Lock, X, Paperclip, Maximize2, Play, Pause, ArrowDown, Reply } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
+import { ThemeToggle } from '@/lib/ThemeContext';
 import { encryptMessage, decryptMessage } from '@/lib/crypto';
 import { compressImage } from '@/lib/imageUtils';
 import {
@@ -223,7 +224,7 @@ function SwipeableMessageItem({
 
       <div
         className={`max-w-[85%] sm:max-w-[72%] rounded-2xl px-3.5 py-2 text-xs shadow-xs relative ${
-          isMe ? 'bg-[#005c4b] text-zinc-100 rounded-tr-xs' : 'bg-[#202c33] text-zinc-100 rounded-tl-xs'
+          isMe ? 'bg-[#d9fdd3] dark:bg-[#005c4b] text-slate-900 dark:text-zinc-100 rounded-tr-xs' : 'bg-white dark:bg-[#202c33] text-slate-900 dark:text-zinc-100 rounded-tl-xs'
         }`}
       >
         {/* Quick Hover Reply Button */}
@@ -1023,18 +1024,18 @@ export default function SecretVaultChat({ passcode, onPanicExit }: SecretVaultCh
     <div
       onClick={requestIOSMotionPermission}
       onContextMenu={handleContextMenu}
-      className="fixed inset-0 z-50 h-dvh w-screen bg-[#0b141a] text-zinc-100 flex flex-col font-sans select-none overflow-hidden pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
+      className="fixed inset-0 z-50 h-dvh w-screen bg-[#efeae2] dark:bg-[#0b141a] text-slate-900 dark:text-zinc-100 flex flex-col font-sans select-none overflow-hidden pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] transition-colors duration-200"
     >
       {/* Privacy Toast */}
       {privacyToast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-[#1f2c34] text-emerald-400 text-xs font-semibold px-4 py-2 rounded-xl border border-emerald-500/30 shadow-xl animate-fade-in flex items-center gap-1.5">
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-white dark:bg-[#1f2c34] text-emerald-600 dark:text-emerald-400 text-xs font-semibold px-4 py-2 rounded-xl border border-emerald-500/30 shadow-xl animate-fade-in flex items-center gap-1.5">
           <Lock className="w-3.5 h-3.5" />
           <span>Private Vault — Screen Content Protected</span>
         </div>
       )}
 
       {/* Header */}
-      <header className="bg-[#1f2c34] border-b border-zinc-800/80 px-3.5 sm:px-4 py-2.5 shrink-0 z-30 flex items-center justify-between shadow-xs">
+      <header className="bg-[#f0f2f5] dark:bg-[#1f2c34] border-b border-slate-200 dark:border-zinc-800/80 px-3.5 sm:px-4 py-2.5 shrink-0 z-30 flex items-center justify-between shadow-xs transition-colors duration-200">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-[#00a884] text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
             S
@@ -1056,6 +1057,7 @@ export default function SecretVaultChat({ passcode, onPanicExit }: SecretVaultCh
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 text-zinc-400">
+          <ThemeToggle />
           <button
             onClick={onPanicExit}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00a884] hover:bg-[#008f6f] text-white font-medium text-xs transition shadow-xs cursor-pointer"
@@ -1190,17 +1192,17 @@ export default function SecretVaultChat({ passcode, onPanicExit }: SecretVaultCh
       )}
 
       {/* Input Controls Footer */}
-      <footer className="bg-[#1f2c34] p-2.5 sm:p-3 border-t border-zinc-800/80 shrink-0 z-30">
+      <footer className="bg-[#f0f2f5] dark:bg-[#1f2c34] p-2.5 sm:p-3 border-t border-slate-200 dark:border-zinc-800/80 shrink-0 z-30 transition-colors duration-200">
         <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto flex items-center gap-2">
           <input type="file" ref={fileInputRef} accept="image/*" onChange={handlePhotoSelect} className="hidden" />
 
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="p-2 text-zinc-400 hover:text-zinc-200 transition cursor-pointer"
+            className="p-2 text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition cursor-pointer"
             title="Attach Photo"
           >
-            <Paperclip className="w-5 h-5 text-zinc-300" />
+            <Paperclip className="w-5 h-5 text-slate-600 dark:text-zinc-300" />
           </button>
 
           {/* Audio Note Recorder Toggle & Timer Badge */}
@@ -1209,7 +1211,7 @@ export default function SecretVaultChat({ passcode, onPanicExit }: SecretVaultCh
               type="button"
               onClick={isRecording ? stopRecordingAudio : startRecordingAudio}
               className={`p-2 rounded-full transition cursor-pointer ${
-                isRecording ? 'bg-rose-600 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
+                isRecording ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200'
               }`}
               title={isRecording ? 'Stop Recording' : 'Record Voice Note'}
             >
@@ -1217,7 +1219,7 @@ export default function SecretVaultChat({ passcode, onPanicExit }: SecretVaultCh
             </button>
 
             {isRecording && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800 border border-zinc-700/80 rounded-lg text-rose-400 text-[11px] font-mono">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-200 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700/80 rounded-lg text-rose-600 dark:text-rose-400 text-[11px] font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse" />
                 <span>0:{recordingSeconds.toString().padStart(2, '0')} / 0:30</span>
               </div>
@@ -1236,7 +1238,7 @@ export default function SecretVaultChat({ passcode, onPanicExit }: SecretVaultCh
             rows={1}
             placeholder={isRecording ? 'Recording voice note...' : 'Type a message...'}
             disabled={isRecording || isSending}
-            className="flex-1 bg-[#2a3942] border border-zinc-700/50 rounded-xl px-3.5 py-2 text-xs text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#00a884] transition disabled:opacity-50 resize-none max-h-24 select-text"
+            className="flex-1 bg-white dark:bg-[#2a3942] border border-slate-300 dark:border-zinc-700/50 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-400 focus:outline-none focus:border-[#00a884] transition disabled:opacity-50 resize-none max-h-24 select-text"
           />
 
           <button
