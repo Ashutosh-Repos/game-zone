@@ -36,62 +36,60 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
   };
 
   return (
-    <div className="flex flex-col w-full h-full bg-[#0d1117] text-white overflow-hidden select-none pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
-      {/* Top Glassmorphic Console Header */}
-      <header className="shrink-0 bg-[#161b22]/90 backdrop-blur-xl border-b border-zinc-800/90 px-4 sm:px-8 py-3.5 z-20 shadow-xl shadow-black/40">
-        <div className="max-w-6xl mx-auto w-full flex items-center justify-between gap-3 sm:gap-6">
-          {/* Back to Hub Button */}
-          <button
-            onClick={handleBack}
-            className="group inline-flex items-center gap-2 bg-[#21262d] hover:bg-[#30363d] active:bg-[#363c46] text-zinc-200 hover:text-white border border-zinc-700/60 px-4 py-2 rounded-xl transition-all duration-200 text-xs sm:text-sm font-semibold shadow-sm cursor-pointer active:scale-95 shrink-0"
-          >
-            <ArrowLeft className="w-4.5 h-4.5 group-hover:-translate-x-0.5 transition-transform" />
-            <span>Back to Hub</span>
-          </button>
+    <div className="relative w-full h-full bg-[#0d1117] text-white overflow-hidden select-none pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
+      {/* Floating Glassmorphic Top Controls Overlay */}
+      <div className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 z-30 flex items-center justify-between gap-2 pointer-events-none">
+        {/* Left: Back Button */}
+        <button
+          onClick={handleBack}
+          className="pointer-events-auto group inline-flex items-center gap-2 bg-[#161b22]/90 backdrop-blur-xl border border-zinc-700/80 hover:border-zinc-500 text-zinc-100 hover:text-white px-3.5 py-2 rounded-xl transition-all duration-200 text-xs sm:text-sm font-extrabold shadow-2xl cursor-pointer active:scale-95 shrink-0"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          <span>Back</span>
+        </button>
 
-          {/* Game Title with Gradient Typography */}
-          <div className="text-center min-w-0 flex-1 flex flex-col items-center">
-            <h2 className="font-extrabold text-sm sm:text-base bg-gradient-to-r from-white via-zinc-100 to-zinc-300 bg-clip-text text-transparent tracking-wide truncate max-w-48 sm:max-w-md">
-              {title}
-            </h2>
-          </div>
-
-          {/* Right Action Control Buttons */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-            <button
-              onClick={() => setShowControlsDrawer(!showControlsDrawer)}
-              title="How to Play / Controls"
-              className="inline-flex items-center gap-1.5 bg-[#21262d] hover:bg-[#30363d] active:bg-[#363c46] text-indigo-400 hover:text-indigo-300 border border-zinc-700/60 px-3.5 py-2 rounded-xl transition-all duration-200 text-xs sm:text-sm font-medium shadow-sm cursor-pointer active:scale-95"
-            >
-              <HelpCircle className="w-4 h-4" />
-              <span className="hidden md:inline">Controls</span>
-            </button>
-            <button
-              onClick={handleRefresh}
-              title="Restart Game"
-              className="inline-flex items-center gap-1.5 bg-[#21262d] hover:bg-[#30363d] active:bg-[#363c46] text-amber-400 hover:text-amber-300 border border-zinc-700/60 px-3.5 py-2 rounded-xl transition-all duration-200 text-xs sm:text-sm font-medium shadow-sm cursor-pointer active:scale-95"
-            >
-              <RefreshCw className="w-4 h-4" />
-              <span className="hidden md:inline">Restart</span>
-            </button>
-            <button
-              onClick={toggleFullscreen}
-              title="Toggle Fullscreen"
-              className="inline-flex items-center gap-1.5 bg-[#21262d] hover:bg-[#30363d] active:bg-[#363c46] text-zinc-300 hover:text-white border border-zinc-700/60 px-3.5 py-2 rounded-xl transition-all duration-200 text-xs sm:text-sm font-medium shadow-sm cursor-pointer active:scale-95"
-            >
-              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              <span className="hidden md:inline">{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
-            </button>
-          </div>
+        {/* Center: Title Badge */}
+        <div className="pointer-events-auto hidden xs:flex items-center bg-[#161b22]/90 backdrop-blur-xl border border-zinc-700/80 px-4 py-2 rounded-xl shadow-2xl max-w-xs sm:max-w-md">
+          <h2 className="font-extrabold text-xs sm:text-sm text-white tracking-wide truncate">
+            {title}
+          </h2>
         </div>
-      </header>
 
-      {/* Controls Guide Drawer */}
+        {/* Right: Floating Control Buttons */}
+        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <button
+            onClick={() => setShowControlsDrawer(!showControlsDrawer)}
+            title="Controls / How to Play"
+            className="p-2 sm:px-3.5 sm:py-2 bg-[#161b22]/90 backdrop-blur-xl border border-zinc-700/80 hover:border-zinc-500 text-indigo-400 hover:text-indigo-300 rounded-xl transition-all duration-200 text-xs sm:text-sm font-semibold shadow-2xl cursor-pointer active:scale-95 flex items-center gap-1.5"
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span className="hidden md:inline">Controls</span>
+          </button>
+          <button
+            onClick={handleRefresh}
+            title="Restart Game"
+            className="p-2 sm:px-3.5 sm:py-2 bg-[#161b22]/90 backdrop-blur-xl border border-zinc-700/80 hover:border-zinc-500 text-amber-400 hover:text-amber-300 rounded-xl transition-all duration-200 text-xs sm:text-sm font-semibold shadow-2xl cursor-pointer active:scale-95 flex items-center gap-1.5"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span className="hidden md:inline">Restart</span>
+          </button>
+          <button
+            onClick={toggleFullscreen}
+            title="Toggle Fullscreen"
+            className="p-2 sm:px-3.5 sm:py-2 bg-[#161b22]/90 backdrop-blur-xl border border-zinc-700/80 hover:border-zinc-500 text-zinc-200 hover:text-white rounded-xl transition-all duration-200 text-xs sm:text-sm font-semibold shadow-2xl cursor-pointer active:scale-95 flex items-center gap-1.5"
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            <span className="hidden md:inline">{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Floating Controls Drawer */}
       {showControlsDrawer && (
-        <div className="bg-[#161b22]/95 backdrop-blur-xl border-b border-indigo-500/30 px-4 sm:px-8 py-3.5 z-20 shadow-2xl animate-fade-in">
-          <div className="max-w-6xl mx-auto w-full flex items-center justify-between gap-3 text-xs sm:text-sm text-zinc-200">
+        <div className="absolute top-16 left-3 right-3 sm:top-18 sm:left-4 sm:right-4 z-40 bg-[#161b22]/95 backdrop-blur-2xl border border-indigo-500/40 p-4 rounded-2xl shadow-2xl animate-fade-in max-w-2xl mx-auto">
+          <div className="flex items-center justify-between gap-3 text-xs sm:text-sm text-zinc-200">
             <div className="flex items-center gap-2">
-              <span className="text-indigo-400 font-bold">🎮 Game Controls:</span>
+              <span className="text-indigo-400 font-bold">🎮 Controls:</span>
               <span className="text-zinc-300 font-medium">{controlsInfo || 'Use Onscreen Touch Buttons or Keyboard Arrow Keys'}</span>
             </div>
             <button
@@ -104,41 +102,20 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
         </div>
       )}
 
-      {/* Embedded Game Container */}
-      <div className={`flex-1 min-h-0 overflow-hidden relative flex items-center justify-center bg-[#090d16] ${isFullscreen ? 'p-0' : 'p-2 sm:p-4'}`}>
+      {/* Fullscreen Embedded Game Container — 100% Height */}
+      <div className="w-full h-full relative flex items-center justify-center bg-[#090d16]">
         {gameHtml ? (
-          <ShadowGameContainer key={key} htmlContent={gameHtml} isFullscreen={isFullscreen} />
+          <ShadowGameContainer key={key} htmlContent={gameHtml} isFullscreen={true} />
         ) : (
           <iframe
             key={key}
             src={gamePath}
             title={title}
-            className={`w-full h-full border-0 transition-all duration-200 ${
-              isFullscreen ? 'rounded-none' : 'rounded-xl shadow-2xl'
-            }`}
+            className="w-full h-full border-0"
             allow="autoplay; keyboard"
           />
         )}
       </div>
-
-      {/* Modern Console Footer */}
-      {!isFullscreen && (
-        <footer className="shrink-0 bg-[#161b22]/90 backdrop-blur-md border-t border-zinc-800/80 px-4 sm:px-8 py-3 z-20 shadow-inner">
-          <div className="max-w-6xl mx-auto w-full flex items-center justify-between text-xs text-zinc-400 font-medium">
-            <div className="flex items-center gap-2">
-              <span className="text-sm select-none">🕹️</span>
-              <span className="font-bold text-zinc-200 tracking-wide">GameZone Arcade Engine</span>
-              <span className="text-zinc-600 hidden sm:inline">•</span>
-              <span className="text-zinc-400 hidden sm:inline">HTML5 Canvas</span>
-            </div>
-            <div className="flex items-center gap-2 text-zinc-500 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>Live Engine</span>
-            </div>
-          </div>
-        </footer>
-      )}
     </div>
   );
 }
-
