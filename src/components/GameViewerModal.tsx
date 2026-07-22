@@ -148,8 +148,8 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
         </div>
       )}
 
-      {/* Fullscreen Embedded Game Container — 100% Height */}
-      <div className="w-full h-full relative flex items-center justify-center bg-[#090d16]">
+      {/* Fullscreen Embedded Game Container — Padded below floating buttons */}
+      <div className="w-full h-full relative flex items-center justify-center bg-[#090d16] pt-16 sm:pt-20 pb-4 px-2 sm:px-4">
         {gameHtml ? (
           <ShadowGameContainer key={key} htmlContent={gameHtml} isFullscreen={true} />
         ) : (
@@ -157,7 +157,7 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
             key={key}
             src={gamePath}
             title={title}
-            className="w-full h-full border-0"
+            className="w-full h-full border-0 rounded-xl"
             allow="autoplay; keyboard"
           />
         )}
