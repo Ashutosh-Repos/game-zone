@@ -4,8 +4,8 @@ import path from 'path';
 import GameViewerModal from '@/components/GameViewerModal';
 
 export const metadata: Metadata = {
-  title: 'Sinuous — GameZone',
-  description: 'Play particle evasion Sinuous arcade game online for free.',
+  title: 'Sinuous Particle Dodge — GameZone',
+  description: 'Play Sinuous particle dodge survival game online for free.',
 };
 
 export default function SinuousPage() {
@@ -14,10 +14,11 @@ export default function SinuousPage() {
 
   return (
     <GameViewerModal
-      title="Sinuous"
+      title="Sinuous Particle Dodge"
       gameHtml={gameHtml}
       gamePath="/games/sinuous/index.html"
-      controlsInfo="Drag Finger / Mouse to Dodge Red Particles"
+      controlsInfo="Touch Controls: Drag Finger / Mouse Pointer across canvas"
+      proTip="Collect glowing blue & green orbs for invincibility shields and slow-motion powers while making smooth circular movements to dodge red particle swarms!"
     />
   );
 }

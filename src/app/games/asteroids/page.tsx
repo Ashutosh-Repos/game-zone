@@ -4,8 +4,8 @@ import path from 'path';
 import GameViewerModal from '@/components/GameViewerModal';
 
 export const metadata: Metadata = {
-  title: 'Asteroids 2D — GameZone',
-  description: 'Play classic vector Asteroids shooter game online for free.',
+  title: 'Asteroids Vector — GameZone',
+  description: 'Play classic Asteroids vector space shooter online for free.',
 };
 
 export default function AsteroidsPage() {
@@ -14,10 +14,11 @@ export default function AsteroidsPage() {
 
   return (
     <GameViewerModal
-      title="Asteroids 2D"
+      title="Asteroids Vector"
       gameHtml={gameHtml}
       gamePath="/games/asteroids/index.html"
-      controlsInfo="Touch Buttons ↺ 🚀 ↻ 💥 or Arrow Keys"
+      controlsInfo="Touch Controls: ↺ / ↻ rotate, 🚀 thrust, 💥 fire • Keyboard: Left/Right to rotate, Up Arrow for thrust, Space to shoot"
+      proTip="Avoid shooting every large asteroid at once; break them down one by one so you don't get swarmed by fast-moving small debris!"
     />
   );
 }

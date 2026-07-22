@@ -4,8 +4,8 @@ import path from 'path';
 import GameViewerModal from '@/components/GameViewerModal';
 
 export const metadata: Metadata = {
-  title: 'Pac-Man HTML5 — GameZone',
-  description: 'Play classic Pac-Man arcade game online for free.',
+  title: 'Pac-Man Arcade — GameZone',
+  description: 'Play classic Pac-Man arcade maze runner online for free.',
 };
 
 export default function PacmanPage() {
@@ -14,10 +14,11 @@ export default function PacmanPage() {
 
   return (
     <GameViewerModal
-      title="Pac-Man HTML5"
+      title="Pac-Man Arcade"
       gameHtml={gameHtml}
       gamePath="/games/pacman/index.html"
-      controlsInfo="Onscreen D-Pad ▲ ◄ ► ▼ or Arrow Keys"
+      controlsInfo="Touch Controls: Onscreen D-Pad ▲ ◄ ► ▼ • Keyboard: Arrow Keys or W/A/S/D"
+      proTip="Lure all 4 ghosts near a corner before swallowing a glowing Power Pellet — eating ghosts in rapid succession yields 200, 400, 800, and 1600 bonus points!"
     />
   );
 }

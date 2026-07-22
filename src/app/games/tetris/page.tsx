@@ -4,8 +4,8 @@ import path from 'path';
 import GameViewerModal from '@/components/GameViewerModal';
 
 export const metadata: Metadata = {
-  title: 'Classic Tetris — GameZone',
-  description: 'Play Classic Tetris online for free. Clear lines and set high scores.',
+  title: 'Tetris Classic — GameZone',
+  description: 'Play classic Tetris block puzzle game online for free.',
 };
 
 export default function TetrisPage() {
@@ -14,10 +14,11 @@ export default function TetrisPage() {
 
   return (
     <GameViewerModal
-      title="Classic Tetris"
+      title="Tetris Classic"
       gameHtml={gameHtml}
       gamePath="/games/tetris/index.html"
-      controlsInfo="Touch Buttons ◄ 🔄 ⬇ ► or Arrow Keys (A/D/W/S)"
+      controlsInfo="Touch Controls: ◄ / ► move, 🔄 rotate, ⬇ drop • Keyboard: A/D or Left/Right (move), W or Up (rotate), S or Down (drop)"
+      proTip="Keep a single 1-wide column open on the right edge and wait for long I-bars to trigger 4-line Tetris clears for massive multiplier bonuses!"
     />
   );
 }

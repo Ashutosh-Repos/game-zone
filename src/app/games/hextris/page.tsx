@@ -4,8 +4,8 @@ import path from 'path';
 import GameViewerModal from '@/components/GameViewerModal';
 
 export const metadata: Metadata = {
-  title: 'Hextris — GameZone',
-  description: 'Play fast-paced hexagonal Hextris puzzle game online for free.',
+  title: 'Hextris Hexagonal Puzzle — GameZone',
+  description: 'Play fast-paced Hextris hexagonal puzzle game online for free.',
 };
 
 export default function HextrisPage() {
@@ -14,10 +14,11 @@ export default function HextrisPage() {
 
   return (
     <GameViewerModal
-      title="Hextris"
+      title="Hextris Hexagonal"
       gameHtml={gameHtml}
       gamePath="/games/hextris/index.html"
-      controlsInfo="Tap Left/Right Screen or Left/Right Arrow Keys"
+      controlsInfo="Touch Controls: Tap Left / Right side of screen • Keyboard: Left / Right Arrow Keys"
+      proTip="Rotate the center hexagon early to group matching colored bars together before incoming blocks pile up outside the grey outer ring!"
     />
   );
 }

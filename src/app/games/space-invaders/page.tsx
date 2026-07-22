@@ -17,7 +17,8 @@ export default function SpaceInvadersPage() {
       title="Space Invaders HTML5"
       gameHtml={gameHtml}
       gamePath="/games/space-invaders/index.html"
-      controlsInfo="Touch Buttons ◄ ► 💥 or Arrow Keys + Space"
+      controlsInfo="Touch Controls: ◄ / ► move, 💥 fire laser • Keyboard: Left/Right Arrow Keys + Space to Shoot"
+      proTip="Hide behind green bunker shields for cover, and prioritize sniping high-value red mystery UFOs across the top for 300 bonus points!"
     />
   );
 }

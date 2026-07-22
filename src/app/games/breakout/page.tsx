@@ -4,7 +4,7 @@ import path from 'path';
 import GameViewerModal from '@/components/GameViewerModal';
 
 export const metadata: Metadata = {
-  title: 'Breakout Deluxe — GameZone',
+  title: 'Breakout Brick Breaker — GameZone',
   description: 'Play classic Breakout brick breaker game online for free.',
 };
 
@@ -14,10 +14,11 @@ export default function BreakoutPage() {
 
   return (
     <GameViewerModal
-      title="Breakout Deluxe"
+      title="Breakout Brick Breaker"
       gameHtml={gameHtml}
       gamePath="/games/breakout/index.html"
-      controlsInfo="Drag Paddle / Mouse or Arrow Keys"
+      controlsInfo="Touch Controls: Drag Paddle / Mouse • Keyboard: Left / Right Arrow Keys"
+      proTip="Angling the ball off the edges of your paddle lets you target top corner gaps and trap the ball above the brick wall for automatic destruction!"
     />
   );
 }
