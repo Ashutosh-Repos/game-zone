@@ -51,6 +51,7 @@
     <canvas id="canvas" width="220" height="440"></canvas>
 
     <div class="sidebar">
+      <a href="/" style="display: block; color: #9ca3af; text-decoration: none; font-size: 11px; font-weight: 700; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 6px; text-align: center;">◄ EXIT</a>
       <div class="card"><div class="label">SCORE</div><div class="val" id="score">0</div></div>
       <div class="card"><div class="label">BEST</div><div class="val" id="best">0</div></div>
       <div class="card"><div class="label">NEXT</div><canvas id="next-canvas" width="70" height="50"></canvas></div>
@@ -137,13 +138,30 @@
       }
 
       function rotate() {
+        if (!current) return;
         var shape = current.shape, newShape = [];
         for (var c = 0; c < shape[0].length; c++) {
           var row = []; for (var r = shape.length - 1; r >= 0; r--) row.push(shape[r][c]);
           newShape.push(row);
         }
-        var oldShape = current.shape; current.shape = newShape;
-        if (collide()) current.shape = oldShape;
+        var oldShape = current.shape, oldX = current.x, oldY = current.y;
+        current.shape = newShape;
+
+        var offsets = [0, -1, 1, -2, 2, -3, 3];
+        var success = false;
+        for (var i = 0; i < offsets.length; i++) {
+          current.x = oldX + offsets[i];
+          if (!collide()) { success = true; break; }
+          current.y = oldY - 1;
+          if (!collide()) { success = true; break; }
+          current.y = oldY;
+        }
+
+        if (!success) {
+          current.shape = oldShape;
+          current.x = oldX;
+          current.y = oldY;
+        }
       }
 
       function drop() {
@@ -214,14 +232,13 @@
         function handle(e) {
           if (e) { e.preventDefault(); e.stopPropagation(); }
           var now = Date.now();
-          if (now - lastCall > 50) {
+          if (now - lastCall > 160) {
             lastCall = now;
             if (gameOver) reset();
             else fn();
           }
         }
         el.addEventListener('pointerdown', handle);
-        el.addEventListener('click', handle);
       }
 
       bindBtn('btn-left', function() { current.x--; if (collide()) current.x++; });

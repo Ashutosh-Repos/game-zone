@@ -173,7 +173,7 @@ export default function StudyPulseFacade({ onSecretTriggered }: StudyPulseFacade
           {/* Featured banner — Space Invaders */}
           <div
             className="relative overflow-hidden rounded-2xl bg-linear-to-r from-emerald-600 to-teal-700 border border-emerald-500/40 p-5 flex items-center justify-between cursor-pointer hover:from-emerald-500 hover:to-teal-600 transition group shadow-lg"
-            onClick={() => setActiveGame('invaders')}
+            onClick={() => { window.location.href = '/games/space-invaders/index.html'; }}
           >
             <div>
               <span className="text-[10px] font-bold text-emerald-200 uppercase tracking-wider mb-1 block">🔥 Featured Arcade Legend</span>
@@ -212,7 +212,7 @@ export default function StudyPulseFacade({ onSecretTriggered }: StudyPulseFacade
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((game) => (
               <div key={game.id}
-                onClick={() => setActiveGame(game.id)}
+                onClick={() => { window.location.href = game.localPath; }}
                 className="bg-[#161b22] border border-zinc-800 rounded-2xl p-5 hover:border-zinc-700 hover:bg-[#1a2030] transition duration-200 flex flex-col justify-between group shadow-sm hover:shadow-lg cursor-pointer"
               >
                 <div>
