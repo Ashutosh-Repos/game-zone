@@ -23,7 +23,7 @@ if (existsSync('.env.local')) {
 }
 
 const dev = process.env.NODE_ENV !== 'production';
-const hostname = process.env.HOSTNAME || '0.0.0.0';
+const hostname = '0.0.0.0';
 const port = parseInt(process.env.PORT || '3000', 10);
 
 // In production, restrict CORS to your deployed domain
@@ -31,7 +31,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((s) => s.trim())
   : '*';
 
-const app = next({ dev, hostname, port });
+const app = next({ dev, hostname: 'localhost', port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
@@ -147,10 +147,10 @@ app.prepare().then(() => {
     });
   });
 
-  httpServer.listen(port, hostname, () => {
-    const displayHost = hostname === '0.0.0.0' ? 'localhost' : hostname;
-    console.log(`> Ready on http://${displayHost}:${port} (bound to ${hostname}:${port})`);
+  httpServer.listen(port, '0.0.0.0', () => {
+    console.log(`> Ready on http://0.0.0.0:${port}`);
     console.log(`> Real-time Socket.IO Server active on /api/socketio`);
   });
 });
+
 
