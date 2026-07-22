@@ -52,7 +52,7 @@ export default function StudyPulseFacade({ onSecretTriggered }: StudyPulseFacade
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<Category>('all');
-  const [activeGame, setActiveGame] = useState<GameId | null>(null);
+
 
   // Stealth trigger
   const logoClickCountRef = useRef(0);

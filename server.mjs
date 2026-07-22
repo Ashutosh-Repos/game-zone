@@ -147,8 +147,9 @@ app.prepare().then(() => {
     });
   });
 
-  httpServer.listen(port, '0.0.0.0', () => {
-    console.log(`> Ready on http://0.0.0.0:${port}`);
+  const bindHost = process.env.PORT || process.env.NODE_ENV === 'production' ? '0.0.0.0' : hostname;
+  httpServer.listen(port, bindHost, () => {
+    console.log(`> Ready on http://${bindHost}:${port}`);
     console.log(`> Real-time Socket.IO Server active on /api/socketio`);
   });
 });
