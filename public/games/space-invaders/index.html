@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Space Invaders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #05050a; color: #fff;
+      font-family: "Courier New", monospace;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      overflow: hidden; padding-bottom: env(safe-area-inset-bottom);
+    }
+    canvas { touch-action: none; }
+    .wrapper {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      width: 100%; flex: 1; min-height: 0; padding: 4px;
+    }
+    .hud {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; max-width: 440px; padding: 4px 8px; font-size: 12px; font-weight: 700;
+    }
+    #canvas {
+      border: 2px solid #1f2937; border-radius: 8px;
+      background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      image-rendering: pixelated; max-width: 100%; max-height: calc(100vh - 140px); object-fit: contain;
+    }
+    .touch-bar {
+      display: flex; gap: 12px; justify-content: center; align-items: center;
+      width: 100%; max-width: 440px; padding: 8px; flex-shrink: 0;
+    }
+    .t-btn {
+      touch-action: manipulation; cursor: pointer; pointer-events: auto; position: relative; z-index: 100;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; font-size: 18px; font-weight: bold;
+      border-radius: 12px; height: 52px; flex: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .t-btn:active { background: rgba(255,255,255,0.35); }
+    .fire-btn { background: rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.7); color: #ffffff; flex: 1.5; }
+    .fire-btn:active { background: rgba(239, 68, 68, 0.6); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="hud">
+      <div style="color: #22c55e;">SCORE: <span id="score">0000</span></div>
+      <div style="color: #ef4444;">LIVES: <span id="lives">💚💚💚</span></div>
+      <div style="color: #eab308;">HI: <span id="best">0000</span></div>
+    </div>
+    <canvas id="canvas" width="440" height="480"></canvas>
+  </div>
+
+  <div class="touch-bar">
+    <button class="t-btn" id="btn-left">◄</button>
+    <button class="t-btn fire-btn" id="btn-fire">💥 FIRE</button>
+    <button class="t-btn" id="btn-right">►</button>
+  </div>
+
+  <script>
+    (function() {
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+      var scoreEl = document.getElementById('score');
+      var livesEl = document.getElementById('lives');
+      var bestEl = document.getElementById('best');
+
+      var W = 440, H = 480;
+      var player = { x: W / 2 - 13, y: H - 35, w: 26, h: 16 };
+      var bullets = [], enemyBullets = [];
+      var aliens = [];
+      var alienDir = 1, alienSpeed = 0.5;
+      var score = 0, lives = 3, best = parseInt(localStorage.getItem('invaders_best') || '0', 10);
+      bestEl.textContent = best.toString().padStart(4, '0');
+      var gameState = 'idle';
+
+      var audioCtx = null;
+      function playLaserSound() {
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          var osc = audioCtx.createOscillator();
+          var gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        } catch(e) {}
+      }
+
+      function initAliens() {
+        aliens = [];
+        var rows = 5, cols = 10;
+        for (var r = 0; r < rows; r++) {
+          for (var c = 0; c < cols; c++) {
+            aliens.push({
+              x: 35 + c * 36, y: 50 + r * 28,
+              w: 24, h: 18, row: r, alive: true,
+              color: r === 0 ? '#ef4444' : r < 3 ? '#a855f7' : '#22c55e'
+            });
+          }
+        }
+      }
+
+      function reset() {
+        player.x = W / 2 - 13;
+        bullets = []; enemyBullets = [];
+        score = 0; lives = 3; alienSpeed = 0.5; alienDir = 1;
+        scoreEl.textContent = '0000';
+        updateLives();
+        initAliens();
+        gameState = 'playing';
+      }
+
+      function updateLives() {
+        var hearts = ''; for (var i = 0; i < lives; i++) hearts += '💚';
+        livesEl.textContent = hearts || 'NONE';
+      }
+
+      function update() {
+        if (gameState !== 'playing') return;
+
+        for (var i = bullets.length - 1; i >= 0; i--) {
+          var b = bullets[i]; b.y -= 7;
+          if (b.y < 0) { bullets.splice(i, 1); continue; }
+
+          for (var j = 0; j < aliens.length; j++) {
+            var a = aliens[j];
+            if (a.alive && b.x > a.x && b.x < a.x + a.w && b.y > a.y && b.y < a.y + a.h) {
+              a.alive = false; bullets.splice(i, 1);
+              score += a.row === 0 ? 30 : a.row < 3 ? 20 : 10;
+              scoreEl.textContent = score.toString().padStart(4, '0');
+              if (score > best) { best = score; bestEl.textContent = best.toString().padStart(4, '0'); localStorage.setItem('invaders_best', best); }
+              break;
+            }
+          }
+        }
+
+        for (var k = enemyBullets.length - 1; k >= 0; k--) {
+          var eb = enemyBullets[k]; eb.y += 4;
+          if (eb.y > H) { enemyBullets.splice(k, 1); continue; }
+
+          if (eb.x > player.x && eb.x < player.x + player.w && eb.y > player.y && eb.y < player.y + player.h) {
+            enemyBullets.splice(k, 1);
+            lives--; updateLives();
+            if (lives <= 0) gameState = 'dead';
+          }
+        }
+
+        var edgeHit = false, aliveCount = 0;
+        aliens.forEach(function(a) {
+          if (a.alive) {
+            aliveCount++;
+            a.x += alienDir * alienSpeed;
+            if (a.x + a.w >= W - 15 || a.x <= 15) edgeHit = true;
+            if (a.y + a.h >= player.y) gameState = 'dead';
+          }
+        });
+
+        if (aliveCount === 0) { alienSpeed += 0.4; initAliens(); }
+        if (edgeHit) { alienDir *= -1; aliens.forEach(function(a) { if (a.alive) a.y += 12; }); }
+
+        if (Math.random() < 0.02) {
+          var aliveAliens = aliens.filter(function(a) { return a.alive; });
+          if (aliveAliens.length > 0) {
+            var shooter = aliveAliens[Math.floor(Math.random() * aliveAliens.length)];
+            enemyBullets.push({ x: shooter.x + shooter.w / 2, y: shooter.y + shooter.h });
+          }
+        }
+      }
+
+      function draw() {
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(player.x, player.y + 6, player.w, player.h - 6);
+        ctx.fillRect(player.x + 10, player.y, 6, 6);
+
+        ctx.fillStyle = '#38bdf8';
+        bullets.forEach(function(b) { ctx.fillRect(b.x - 1, b.y, 3, 8); });
+
+        ctx.fillStyle = '#ef4444';
+        enemyBullets.forEach(function(eb) { ctx.fillRect(eb.x - 1, eb.y, 3, 8); });
+
+        aliens.forEach(function(a) {
+          if (a.alive) {
+            ctx.fillStyle = a.color;
+            ctx.fillRect(a.x + 4, a.y, a.w - 8, a.h);
+            ctx.fillRect(a.x, a.y + 4, a.w, a.h - 8);
+          }
+        });
+
+        if (gameState === 'idle' || gameState === 'dead') {
+          ctx.fillStyle = 'rgba(5, 5, 10, 0.88)';
+          ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = gameState === 'dead' ? '#ef4444' : '#22c55e';
+          ctx.font = 'bold 26px monospace'; ctx.textAlign = 'center';
+          ctx.fillText(gameState === 'dead' ? 'GAME OVER' : 'SPACE INVADERS', W / 2, H / 2 - 20);
+          ctx.font = '13px monospace'; ctx.fillStyle = '#9ca3af';
+          ctx.fillText('Tap FIRE or Buttons to Play', W / 2, H / 2 + 20);
+        }
+      }
+
+      function shoot() {
+        if (gameState !== 'playing') { reset(); return; }
+        if (bullets.length < 3) {
+          bullets.push({ x: player.x + player.w / 2, y: player.y });
+          playLaserSound();
+        }
+      }
+
+      function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+      // Unified Pointer & Click Helper
+      function bindBtn(id, fn) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var lastCall = 0;
+        function handle(e) {
+          if (e) { e.preventDefault(); e.stopPropagation(); }
+          var now = Date.now();
+          if (now - lastCall > 50) {
+            lastCall = now;
+            fn();
+          }
+        }
+        el.addEventListener('pointerdown', handle);
+        el.addEventListener('click', handle);
+      }
+
+      bindBtn('btn-left', function() {
+        if (gameState !== 'playing') reset();
+        else player.x = Math.max(10, player.x - 22);
+      });
+      bindBtn('btn-right', function() {
+        if (gameState !== 'playing') reset();
+        else player.x = Math.min(W - player.w - 10, player.x + 22);
+      });
+      bindBtn('btn-fire', shoot);
+
+      canvas.addEventListener('pointerdown', function(e) {
+        if (gameState !== 'playing') reset();
+      });
+
+      window.addEventListener('keydown', function(e) {
+        if (gameState !== 'playing') { if (e.code === 'Space') reset(); return; }
+        if (e.key === 'ArrowLeft'  || e.key === 'a') player.x = Math.max(10, player.x - 16);
+        if (e.key === 'ArrowRight' || e.key === 'd') player.x = Math.min(W - player.w - 10, player.x + 16);
+        if (e.code === 'Space' || e.key === 'w') shoot();
+      });
+
+      initAliens();
+      loop();
+    })();
+  </script>
+</body>
+</html>

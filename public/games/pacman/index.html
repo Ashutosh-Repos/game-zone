@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pacman</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #000; color: #fff;
+      font-family: "Courier New", monospace;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      overflow: hidden; padding-bottom: env(safe-area-inset-bottom);
+    }
+    canvas { touch-action: none; }
+    .wrapper {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      width: 100%; flex: 1; min-height: 0; padding: 4px;
+    }
+    #canvas {
+      display: block; image-rendering: pixelated;
+      max-width: 100%; max-height: calc(100vh - 130px); object-fit: contain;
+    }
+    .dpad {
+      display: grid; grid-template-columns: repeat(3, 48px); grid-template-rows: repeat(3, 48px);
+      gap: 4px; margin-bottom: 8px; flex-shrink: 0; justify-content: center;
+    }
+    .dp-btn {
+      touch-action: manipulation; cursor: pointer; pointer-events: auto; position: relative; z-index: 100;
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35);
+      color: #fff; font-size: 18px; font-weight: bold; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .dp-btn:active { background: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <canvas id="canvas" width="448" height="520"></canvas>
+  </div>
+
+  <div class="dpad">
+    <div></div><button class="dp-btn" id="btn-up">▲</button><div></div>
+    <button class="dp-btn" id="btn-left">◄</button><div></div><button class="dp-btn" id="btn-right">►</button>
+    <div></div><button class="dp-btn" id="btn-down">▼</button><div></div>
+  </div>
+
+  <script>
+    (function() {
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+      var W = 448, H = 520;
+      var CELL = 16;
+
+      var MAP_TEMPLATE = [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1],
+        [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
+        [1,3,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,3,1],
+        [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
+        [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+        [1,2,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,2,1],
+        [1,2,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,2,1],
+        [1,2,2,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,2,2,1],
+        [1,1,1,1,1,1,2,1,1,1,1,1,0,1,1,0,1,1,1,1,1,2,1,1,1,1,1,1],
+        [0,0,0,0,0,1,2,1,1,1,1,1,0,1,1,0,1,1,1,1,1,2,1,0,0,0,0,0],
+        [0,0,0,0,0,1,2,1,1,0,0,0,0,0,0,0,0,0,0,1,1,2,1,0,0,0,0,0],
+        [0,0,0,0,0,1,2,1,1,0,1,1,1,4,4,1,1,1,0,1,1,2,1,0,0,0,0,0],
+        [1,1,1,1,1,1,2,1,1,0,1,4,4,4,4,4,4,1,0,1,1,2,1,1,1,1,1,1],
+        [0,0,0,0,0,0,2,0,0,0,1,4,4,4,4,4,4,1,0,0,0,2,0,0,0,0,0,0],
+        [1,1,1,1,1,1,2,1,1,0,1,4,4,4,4,4,4,1,0,1,1,2,1,1,1,1,1,1],
+        [0,0,0,0,0,1,2,1,1,0,1,1,1,1,1,1,1,1,0,1,1,2,1,0,0,0,0,0],
+        [0,0,0,0,0,1,2,1,1,0,0,0,0,0,0,0,0,0,0,1,1,2,1,0,0,0,0,0],
+        [0,0,0,0,0,1,2,1,1,0,1,1,1,1,1,1,1,1,0,1,1,2,1,0,0,0,0,0],
+        [1,1,1,1,1,1,2,1,1,0,1,1,1,1,1,1,1,1,0,1,1,2,1,1,1,1,1,1],
+        [1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1],
+        [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
+        [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
+        [1,3,2,2,1,1,2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,1,1,2,2,3,1],
+        [1,1,1,2,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,2,1,1,1],
+        [1,1,1,2,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,2,1,1,1],
+        [1,2,2,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,2,2,1],
+        [1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,1,1,2,1],
+        [1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,1,1,2,1],
+        [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+      ];
+
+      var map = JSON.parse(JSON.stringify(MAP_TEMPLATE));
+      var pacman = { x: 13.5, y: 23, dirX: -1, dirY: 0, nextDirX: -1, nextDirY: 0, speed: 0.12 };
+      var ghosts = [
+        { name: 'Blinky', color: '#ef4444', x: 13.5, y: 11, dirX: 1, dirY: 0 },
+        { name: 'Pinky',  color: '#f472b6', x: 13.5, y: 14, dirX: -1, dirY: 0 },
+        { name: 'Inky',   color: '#38bdf8', x: 11.5, y: 14, dirX: 0, dirY: -1 },
+        { name: 'Clyde',  color: '#fb923c', x: 15.5, y: 14, dirX: 0, dirY: 1 }
+      ];
+
+      var score = 0, lives = 3, best = parseInt(localStorage.getItem('pacman_best') || '0', 10);
+      var scaredTimer = 0, state = 'idle';
+
+      function reset() {
+        map = JSON.parse(JSON.stringify(MAP_TEMPLATE));
+        pacman.x = 13.5; pacman.y = 23; pacman.dirX = -1; pacman.dirY = 0;
+        ghosts[0].x = 13.5; ghosts[0].y = 11; ghosts[1].x = 13.5; ghosts[1].y = 14;
+        ghosts[2].x = 11.5; ghosts[2].y = 14; ghosts[3].x = 15.5; ghosts[3].y = 14;
+        score = 0; lives = 3; scaredTimer = 0; state = 'playing';
+      }
+
+      function update() {
+        if (state !== 'playing') return;
+
+        var nextTileX = Math.round(pacman.x + pacman.nextDirX * 0.5);
+        var nextTileY = Math.round(pacman.y + pacman.nextDirY * 0.5);
+        if (map[nextTileY] && map[nextTileY][nextTileX] !== 1) {
+          pacman.dirX = pacman.nextDirX; pacman.dirY = pacman.nextDirY;
+        }
+
+        var targetX = pacman.x + pacman.dirX * pacman.speed;
+        var targetY = pacman.y + pacman.dirY * pacman.speed;
+        var tileX = Math.round(targetX), tileY = Math.round(targetY);
+
+        if (map[tileY] && map[tileY][tileX] !== 1) {
+          pacman.x = targetX; pacman.y = targetY;
+        }
+
+        if (pacman.x < 0) pacman.x = 27; if (pacman.x > 27) pacman.x = 0;
+
+        var curTileX = Math.round(pacman.x), curTileY = Math.round(pacman.y);
+        if (map[curTileY] && map[curTileY][curTileX] === 2) {
+          map[curTileY][curTileX] = 0; score += 10;
+        } else if (map[curTileY] && map[curTileY][curTileX] === 3) {
+          map[curTileY][curTileX] = 0; score += 50; scaredTimer = 300;
+        }
+
+        if (score > best) { best = score; localStorage.setItem('pacman_best', best); }
+        if (scaredTimer > 0) scaredTimer--;
+
+        ghosts.forEach(function(g) {
+          var gx = g.x + g.dirX * (scaredTimer > 0 ? 0.05 : 0.08);
+          var gy = g.y + g.dirY * (scaredTimer > 0 ? 0.05 : 0.08);
+          var gTileX = Math.round(gx), gTileY = Math.round(gy);
+
+          if (map[gTileY] && map[gTileY][gTileX] !== 1) {
+            g.x = gx; g.y = gy;
+          } else {
+            var dirs = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}];
+            var valid = dirs.filter(function(d) {
+              var tx = Math.round(g.x + d.x), ty = Math.round(g.y + d.y);
+              return map[ty] && map[ty][tx] !== 1;
+            });
+            if (valid.length) {
+              var picked = valid[Math.floor(Math.random() * valid.length)];
+              g.dirX = picked.x; g.dirY = picked.y;
+            }
+          }
+
+          if (Math.hypot(pacman.x - g.x, pacman.y - g.y) < 0.8) {
+            if (scaredTimer > 0) {
+              score += 200; g.x = 13.5; g.y = 14;
+            } else {
+              lives--;
+              if (lives <= 0) state = 'dead';
+              else { pacman.x = 13.5; pacman.y = 23; }
+            }
+          }
+        });
+      }
+
+      function draw() {
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+
+        for (var r = 0; r < 31; r++) {
+          for (var c = 0; c < 28; c++) {
+            var val = map[r][c], x = c * CELL, y = r * CELL;
+            if (val === 1) {
+              ctx.fillStyle = '#1d4ed8'; ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
+            } else if (val === 2) {
+              ctx.fillStyle = '#fde047'; ctx.beginPath(); ctx.arc(x + CELL / 2, y + CELL / 2, 2.5, 0, Math.PI * 2); ctx.fill();
+            } else if (val === 3) {
+              ctx.fillStyle = '#fde047'; ctx.beginPath(); ctx.arc(x + CELL / 2, y + CELL / 2, 6, 0, Math.PI * 2); ctx.fill();
+            }
+          }
+        }
+
+        ctx.fillStyle = '#facc15';
+        var px = pacman.x * CELL + CELL / 2, py = pacman.y * CELL + CELL / 2;
+        ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fill();
+
+        ghosts.forEach(function(g) {
+          var gx = g.x * CELL + CELL / 2, gy = g.y * CELL + CELL / 2;
+          ctx.fillStyle = scaredTimer > 0 ? '#3b82f6' : g.color;
+          ctx.beginPath(); ctx.arc(gx, gy, 7, 0, Math.PI * 2); ctx.fill();
+        });
+
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 13px monospace';
+        ctx.fillText('1UP: ' + score, 16, 496);
+        ctx.fillText('HIGH: ' + best, 150, 496);
+        ctx.fillText('LIVES: ' + '💛'.repeat(lives), 300, 496);
+
+        if (state === 'idle' || state === 'dead') {
+          ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = '#facc15'; ctx.font = 'bold 26px monospace'; ctx.textAlign = 'center';
+          ctx.fillText(state === 'idle' ? 'PAC-MAN' : 'GAME OVER', W / 2, H / 2 - 20);
+          ctx.fillStyle = '#fff'; ctx.font = '13px monospace';
+          ctx.fillText('Tap D-Pad to Play', W / 2, H / 2 + 20);
+        }
+      }
+
+      function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+      function setDir(dx, dy) {
+        if (state !== 'playing') reset();
+        pacman.nextDirX = dx; pacman.nextDirY = dy;
+      }
+
+      function bindBtn(id, dx, dy) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var handle = function(e) {
+          if (e) { e.preventDefault(); e.stopPropagation(); }
+          setDir(dx, dy);
+        };
+        el.addEventListener('pointerdown', handle);
+        el.addEventListener('click', handle);
+      }
+
+      bindBtn('btn-up', 0, -1);
+      bindBtn('btn-down', 0, 1);
+      bindBtn('btn-left', -1, 0);
+      bindBtn('btn-right', 1, 0);
+
+      canvas.addEventListener('pointerdown', function(e) {
+        if (state !== 'playing') reset();
+      });
+
+      window.addEventListener('keydown', function(e) {
+        if (state !== 'playing') { if (e.code === 'Space') reset(); return; }
+        if (e.key === 'ArrowLeft'  || e.key === 'a') setDir(-1, 0);
+        if (e.key === 'ArrowRight' || e.key === 'd') setDir(1, 0);
+        if (e.key === 'ArrowUp'    || e.key === 'w') setDir(0, -1);
+        if (e.key === 'ArrowDown'  || e.key === 's') setDir(0, 1);
+      });
+
+      loop();
+    })();
+  </script>
+</body>
+</html>

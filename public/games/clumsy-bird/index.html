@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Clumsy Bird</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #70c5ce; color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    canvas { touch-action: none; cursor: pointer; }
+    .wrapper {
+      position: relative; width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #canvas { display: block; max-width: 100vw; max-height: 100vh; object-fit: contain; }
+    .overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 50;
+    }
+    .overlay h1 { font-size: 36px; font-weight: 900; color: #facc15; text-shadow: 0 3px 6px rgba(0,0,0,0.5); margin-bottom: 8px; }
+    .overlay p { font-size: 14px; color: #fff; margin-bottom: 20px; font-weight: 600; }
+    .btn {
+      touch-action: manipulation; cursor: pointer; pointer-events: auto; position: relative; z-index: 100;
+      background: #f59e0b; color: #fff; font-size: 16px; font-weight: 800;
+      padding: 12px 32px; border-radius: 12px; border: 2px solid #fff;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3); transition: transform 0.1s;
+    }
+    .btn:active { transform: scale(0.96); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <canvas id="canvas" width="360" height="540"></canvas>
+    <div class="overlay" id="start-screen">
+      <h1>CLUMSY BIRD</h1>
+      <p>Tap Screen or Press Space to Fly!</p>
+      <button class="btn" id="start-btn">FLY NOW</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+      var startScreen = document.getElementById('start-screen');
+      var startBtn = document.getElementById('start-btn');
+
+      var W = 360, H = 540;
+      var bird = { x: 80, y: H / 2, vy: 0, r: 12, g: 0.4, jump: -7.5 };
+      var pipes = [];
+      var score = 0, best = parseInt(localStorage.getItem('bird_best') || '0', 10);
+      var state = 'idle', timer = 0;
+
+      function reset() {
+        bird.y = H / 2; bird.vy = 0;
+        pipes = []; score = 0; timer = 0;
+        state = 'playing';
+        startScreen.style.display = 'none';
+      }
+
+      function flap() {
+        if (state === 'idle') { reset(); return; }
+        if (state === 'playing') bird.vy = bird.jump;
+        if (state === 'dead') reset();
+      }
+
+      function update() {
+        if (state !== 'playing') return;
+
+        bird.vy += bird.g;
+        bird.y += bird.vy;
+
+        timer++;
+        if (timer % 90 === 0) {
+          var gap = 125;
+          var topH = Math.floor(Math.random() * (H - gap - 160)) + 40;
+          pipes.push({ x: W, top: topH, bottom: H - topH - gap, passed: false });
+        }
+
+        for (var i = pipes.length - 1; i >= 0; i--) {
+          var p = pipes[i]; p.x -= 2.5;
+          if (p.x < -60) { pipes.splice(i, 1); continue; }
+
+          if (!p.passed && p.x + 50 < bird.x) {
+            p.passed = true; score++;
+            if (score > best) { best = score; localStorage.setItem('bird_best', best); }
+          }
+
+          if (bird.x + bird.r > p.x && bird.x - bird.r < p.x + 50) {
+            if (bird.y - bird.r < p.top || bird.y + bird.r > H - p.bottom) {
+              state = 'dead'; showGameOver();
+            }
+          }
+        }
+
+        if (bird.y + bird.r >= H - 40 || bird.y - bird.r <= 0) {
+          state = 'dead'; showGameOver();
+        }
+      }
+
+      function showGameOver() {
+        startScreen.style.display = 'flex';
+        startScreen.querySelector('h1').textContent = 'GAME OVER';
+        startScreen.querySelector('p').textContent = 'Score: ' + score + '  |  Best: ' + best;
+        startBtn.textContent = 'TRY AGAIN';
+      }
+
+      function draw() {
+        ctx.fillStyle = '#70c5ce'; ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = '#73bf2e';
+        pipes.forEach(function(p) {
+          ctx.fillRect(p.x, 0, 50, p.top);
+          ctx.fillRect(p.x, H - p.bottom, 50, p.bottom);
+        });
+
+        ctx.fillStyle = '#ded895'; ctx.fillRect(0, H - 40, W, 40);
+        ctx.fillStyle = '#73bf2e'; ctx.fillRect(0, H - 40, W, 8);
+
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath(); ctx.arc(bird.x, bird.y, bird.r, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 36px system-ui'; ctx.textAlign = 'center';
+        if (state === 'playing') ctx.fillText(score, W / 2, 60);
+      }
+
+      function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+      function handleAction(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        flap();
+      }
+
+      startBtn.addEventListener('pointerdown', handleAction);
+      startBtn.addEventListener('click', handleAction);
+      canvas.addEventListener('pointerdown', handleAction);
+
+      window.addEventListener('keydown', function(e) {
+        if (e.code === 'Space' || e.key === 'ArrowUp' || e.key === 'w') flap();
+      });
+
+      loop();
+    })();
+  </script>
+</body>
+</html>

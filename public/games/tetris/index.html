@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tetris</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #0d1117; color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      overflow: hidden; padding-bottom: env(safe-area-inset-bottom);
+    }
+    canvas { touch-action: none; }
+    .wrapper {
+      display: flex; gap: 12px;
+      align-items: center; justify-content: center;
+      width: 100%; flex: 1; min-height: 0; padding: 4px;
+    }
+    #canvas {
+      border: 2px solid #30363d; border-radius: 8px;
+      background: #161b22; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      max-height: calc(100vh - 130px); object-fit: contain;
+    }
+    .sidebar { display: flex; flex-direction: column; gap: 8px; width: 95px; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 6px; text-align: center; }
+    .label { font-size: 9px; font-weight: 700; color: #8b949e; }
+    .val { font-size: 16px; font-weight: 900; color: #fff; margin-top: 2px; }
+    #next-canvas { display: block; margin: 4px auto 0; }
+    .touch-bar {
+      display: flex; gap: 6px; justify-content: center; align-items: center;
+      width: 100%; max-width: 360px; padding: 6px 8px; flex-shrink: 0;
+    }
+    .t-btn {
+      touch-action: manipulation; cursor: pointer; pointer-events: auto; position: relative; z-index: 100;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; font-size: 14px; font-weight: bold;
+      border-radius: 10px; height: 48px; flex: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .t-btn:active { background: rgba(255,255,255,0.35); }
+    .rot-btn { background: rgba(99, 102, 241, 0.4); border-color: rgba(99, 102, 241, 0.7); color: #ffffff; }
+    .drop-btn { background: rgba(34, 197, 94, 0.4); border-color: rgba(34, 197, 94, 0.7); color: #ffffff; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <canvas id="canvas" width="220" height="380"></canvas>
+
+    <div class="sidebar">
+      <div class="card"><div class="label">SCORE</div><div class="val" id="score">0</div></div>
+      <div class="card"><div class="label">BEST</div><div class="val" id="best">0</div></div>
+      <div class="card"><div class="label">NEXT</div><canvas id="next-canvas" width="70" height="50"></canvas></div>
+    </div>
+  </div>
+
+  <div class="touch-bar">
+    <button class="t-btn" id="btn-left">◄</button>
+    <button class="t-btn rot-btn" id="btn-rot">🔄</button>
+    <button class="t-btn drop-btn" id="btn-drop">⬇</button>
+    <button class="t-btn" id="btn-right">►</button>
+  </div>
+
+  <script>
+    (function() {
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+      var nextCanvas = document.getElementById('next-canvas');
+      var nctx = nextCanvas.getContext('2d');
+      var scoreEl = document.getElementById('score');
+      var bestEl = document.getElementById('best');
+
+      var COLS = 10, ROWS = 20, SIZE = 22;
+      var grid = Array(ROWS).fill(null).map(function() { return Array(COLS).fill(0); });
+      var score = 0, best = parseInt(localStorage.getItem('tetris_best') || '0', 10);
+      bestEl.textContent = best;
+
+      var SHAPES = [
+        [],
+        [[1,1,1,1]], [[1,1],[1,1]], [[0,1,0],[1,1,1]],
+        [[1,0,0],[1,1,1]], [[0,0,1],[1,1,1]], [[0,1,1],[1,1,0]], [[1,1,0],[0,1,1]]
+      ];
+      var COLORS = ['', '#06b6d4', '#eab308', '#a855f7', '#f97316', '#3b82f6', '#22c55e', '#ef4444'];
+
+      var current = null, nextPiece = getRandomPiece();
+      var dropCounter = 0, dropInterval = 600, lastTime = 0, gameOver = false;
+
+      function getRandomPiece() {
+        var type = Math.floor(Math.random() * 7) + 1;
+        var shape = SHAPES[type];
+        return { type: type, shape: shape, x: Math.floor((COLS - shape[0].length) / 2), y: 0 };
+      }
+
+      function spawnPiece() {
+        current = nextPiece; nextPiece = getRandomPiece(); drawNext();
+        if (collide()) gameOver = true;
+      }
+
+      function collide() {
+        var shape = current.shape;
+        for (var r = 0; r < shape.length; r++) {
+          for (var c = 0; c < shape[r].length; c++) {
+            if (shape[r][c]) {
+              var newY = current.y + r, newX = current.x + c;
+              if (newX < 0 || newX >= COLS || newY >= ROWS || (newY >= 0 && grid[newY][newX])) return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function merge() {
+        var shape = current.shape;
+        for (var r = 0; r < shape.length; r++) {
+          for (var c = 0; c < shape[r].length; c++) {
+            if (shape[r][c] && current.y + r >= 0) grid[current.y + r][current.x + c] = current.type;
+          }
+        }
+      }
+
+      function clearLines() {
+        var linesCleared = 0;
+        for (var r = ROWS - 1; r >= 0; r--) {
+          if (grid[r].every(function(cell) { return cell !== 0; })) {
+            grid.splice(r, 1); grid.unshift(Array(COLS).fill(0));
+            linesCleared++; r++;
+          }
+        }
+        if (linesCleared) {
+          score += linesCleared * 100 * linesCleared; scoreEl.textContent = score;
+          if (score > best) { best = score; bestEl.textContent = best; localStorage.setItem('tetris_best', best); }
+          dropInterval = Math.max(150, 600 - Math.floor(score / 500) * 50);
+        }
+      }
+
+      function rotate() {
+        var shape = current.shape, newShape = [];
+        for (var c = 0; c < shape[0].length; c++) {
+          var row = []; for (var r = shape.length - 1; r >= 0; r--) row.push(shape[r][c]);
+          newShape.push(row);
+        }
+        var oldShape = current.shape; current.shape = newShape;
+        if (collide()) current.shape = oldShape;
+      }
+
+      function drop() {
+        current.y++;
+        if (collide()) { current.y--; merge(); clearLines(); spawnPiece(); }
+        dropCounter = 0;
+      }
+
+      function draw() {
+        ctx.fillStyle = '#161b22'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        for (var r = 0; r < ROWS; r++) {
+          for (var c = 0; c < COLS; c++) {
+            if (grid[r][c]) {
+              ctx.fillStyle = COLORS[grid[r][c]];
+              ctx.fillRect(c * SIZE + 1, r * SIZE + 1, SIZE - 2, SIZE - 2);
+            }
+          }
+        }
+        if (current && !gameOver) {
+          ctx.fillStyle = COLORS[current.type];
+          for (var r = 0; r < current.shape.length; r++) {
+            for (var c = 0; c < current.shape[r].length; c++) {
+              if (current.shape[r][c] && current.y + r >= 0) {
+                ctx.fillRect((current.x + c) * SIZE + 1, (current.y + r) * SIZE + 1, SIZE - 2, SIZE - 2);
+              }
+            }
+          }
+        }
+        if (gameOver) {
+          ctx.fillStyle = 'rgba(13, 17, 23, 0.88)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#ef4444'; ctx.font = 'bold 20px system-ui'; ctx.textAlign = 'center';
+          ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+        }
+      }
+
+      function drawNext() {
+        nctx.fillStyle = '#161b22'; nctx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+        if (nextPiece) {
+          nctx.fillStyle = COLORS[nextPiece.type];
+          var shape = nextPiece.shape;
+          var offsetX = (nextCanvas.width - shape[0].length * 12) / 2;
+          var offsetY = (nextCanvas.height - shape.length * 12) / 2;
+          for (var r = 0; r < shape.length; r++) {
+            for (var c = 0; c < shape[r].length; c++) {
+              if (shape[r][c]) nctx.fillRect(offsetX + c * 12, offsetY + r * 12, 10, 10);
+            }
+          }
+        }
+      }
+
+      function update(time) {
+        if (!time) time = 0;
+        var delta = time - lastTime; lastTime = time;
+        if (!gameOver) { dropCounter += delta; if (dropCounter > dropInterval) drop(); }
+        draw(); requestAnimationFrame(update);
+      }
+
+      function reset() {
+        grid = Array(ROWS).fill(null).map(function() { return Array(COLS).fill(0); });
+        score = 0; scoreEl.textContent = '0'; gameOver = false; dropInterval = 600;
+        spawnPiece();
+      }
+
+      function bindBtn(id, fn) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var lastCall = 0;
+        function handle(e) {
+          if (e) { e.preventDefault(); e.stopPropagation(); }
+          var now = Date.now();
+          if (now - lastCall > 50) {
+            lastCall = now;
+            if (gameOver) reset();
+            else fn();
+          }
+        }
+        el.addEventListener('pointerdown', handle);
+        el.addEventListener('click', handle);
+      }
+
+      bindBtn('btn-left', function() { current.x--; if (collide()) current.x++; });
+      bindBtn('btn-right', function() { current.x++; if (collide()) current.x--; });
+      bindBtn('btn-rot', rotate);
+      bindBtn('btn-drop', drop);
+
+      canvas.addEventListener('pointerdown', function(e) { if (gameOver) reset(); });
+
+      window.addEventListener('keydown', function(e) {
+        if (gameOver) { if (e.code === 'Space') reset(); return; }
+        if (e.key === 'ArrowLeft'  || e.key === 'a') { current.x--; if (collide()) current.x++; }
+        if (e.key === 'ArrowRight' || e.key === 'd') { current.x++; if (collide()) current.x--; }
+        if (e.key === 'ArrowDown'  || e.key === 's') drop();
+        if (e.key === 'ArrowUp'    || e.key === 'w') rotate();
+      });
+
+      reset(); update();
+    })();
+  </script>
+</body>
+</html>

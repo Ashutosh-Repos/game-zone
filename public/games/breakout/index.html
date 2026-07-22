@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Breakout Deluxe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #0d1117; color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      overflow: hidden; padding-bottom: env(safe-area-inset-bottom);
+    }
+    canvas { touch-action: none; cursor: pointer; }
+    .wrapper {
+      position: relative; width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #canvas { display: block; max-width: 100vw; max-height: 100vh; object-fit: contain; }
+    .overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(13, 17, 23, 0.88); backdrop-filter: blur(4px); z-index: 50;
+    }
+    .overlay h1 { font-size: 34px; font-weight: 900; color: #f59e0b; margin-bottom: 8px; }
+    .overlay p { font-size: 13px; color: #94a3b8; margin-bottom: 20px; text-align: center; }
+    .btn {
+      touch-action: manipulation; cursor: pointer; pointer-events: auto; position: relative; z-index: 100;
+      background: #f59e0b; color: #fff; font-size: 15px; font-weight: 700;
+      padding: 12px 32px; border-radius: 12px; border: none;
+      box-shadow: 0 4px 14px rgba(245,158,11,0.4); transition: transform 0.1s;
+    }
+    .btn:active { transform: scale(0.96); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <canvas id="canvas" width="400" height="500"></canvas>
+    <div class="overlay" id="start-screen">
+      <h1>BREAKOUT DELUXE</h1>
+      <p>Move paddle to bounce ball & destroy bricks!</p>
+      <button class="btn" id="start-btn">PLAY NOW</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+      var startScreen = document.getElementById('start-screen');
+      var startBtn = document.getElementById('start-btn');
+
+      var W = 400, H = 500;
+      var paddle = { x: W / 2 - 35, y: H - 30, w: 70, h: 12 };
+      var ball = { x: W / 2, y: H - 50, vx: 3.5, vy: -4, r: 6 };
+      var bricks = [];
+      var score = 0, lives = 3, best = parseInt(localStorage.getItem('breakout_best') || '0', 10);
+      var state = 'idle';
+
+      function initBricks() {
+        bricks = [];
+        var rows = 5, cols = 8, bw = 44, bh = 16, pad = 5, offsetTop = 40, offsetLeft = 6;
+        var colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
+        for (var r = 0; r < rows; r++) {
+          for (var c = 0; c < cols; c++) {
+            bricks.push({
+              x: c * (bw + pad) + offsetLeft,
+              y: r * (bh + pad) + offsetTop,
+              w: bw, h: bh, alive: true, color: colors[r]
+            });
+          }
+        }
+      }
+
+      function reset() {
+        paddle.x = W / 2 - 35;
+        ball.x = W / 2; ball.y = H - 50; ball.vx = 3.5; ball.vy = -4;
+        score = 0; lives = 3;
+        initBricks();
+        state = 'playing';
+        startScreen.style.display = 'none';
+      }
+
+      function update() {
+        if (state !== 'playing') return;
+
+        ball.x += ball.vx; ball.y += ball.vy;
+
+        if (ball.x - ball.r <= 0 || ball.x + ball.r >= W) ball.vx *= -1;
+        if (ball.y - ball.r <= 0) ball.vy *= -1;
+
+        if (ball.y + ball.r >= paddle.y && ball.x >= paddle.x && ball.x <= paddle.x + paddle.w) {
+          ball.vy = -Math.abs(ball.vy);
+          var hitPos = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+          ball.vx = hitPos * 5;
+        }
+
+        if (ball.y + ball.r >= H) {
+          lives--;
+          if (lives <= 0) { state = 'dead'; showGameOver(); }
+          else { ball.x = W / 2; ball.y = H - 50; ball.vx = 3.5; ball.vy = -4; }
+        }
+
+        var aliveCount = 0;
+        bricks.forEach(function(b) {
+          if (b.alive) {
+            aliveCount++;
+            if (ball.x + ball.r > b.x && ball.x - ball.r < b.x + b.w && ball.y + ball.r > b.y && ball.y - ball.r < b.y + b.h) {
+              b.alive = false; ball.vy *= -1;
+              score += 10;
+              if (score > best) { best = score; localStorage.setItem('breakout_best', best); }
+            }
+          }
+        });
+
+        if (aliveCount === 0) initBricks();
+      }
+
+      function showGameOver() {
+        startScreen.style.display = 'flex';
+        startScreen.querySelector('h1').textContent = 'GAME OVER';
+        startScreen.querySelector('p').textContent = 'Score: ' + score + '  |  Best: ' + best;
+        startBtn.textContent = 'TRY AGAIN';
+      }
+
+      function draw() {
+        ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+
+        bricks.forEach(function(b) {
+          if (b.alive) {
+            ctx.fillStyle = b.color;
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+          }
+        });
+
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 12px system-ui';
+        ctx.fillText('SCORE: ' + score, 10, 24);
+        ctx.fillText('LIVES: ' + '❤️'.repeat(lives), W - 90, 24);
+      }
+
+      function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+      function handleAction(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        reset();
+      }
+
+      startBtn.addEventListener('pointerdown', handleAction);
+      startBtn.addEventListener('click', handleAction);
+
+      window.addEventListener('pointermove', function(e) {
+        var rect = canvas.getBoundingClientRect();
+        var mx = e.clientX - rect.left;
+        paddle.x = Math.max(0, Math.min(W - paddle.w, mx - paddle.w / 2));
+      });
+
+      initBricks(); loop();
+    })();
+  </script>
+</body>
+</html>

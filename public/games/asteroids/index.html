@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Asteroids</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #050508; color: #fff;
+      font-family: "Courier New", monospace;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      overflow: hidden; padding-bottom: env(safe-area-inset-bottom);
+    }
+    canvas { touch-action: none; }
+    .wrapper {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      width: 100%; flex: 1; min-height: 0; padding: 4px;
+    }
+    .hud {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; max-width: 440px; padding: 4px 8px; font-size: 12px; font-weight: 700;
+    }
+    #canvas {
+      border: 2px solid #1f2937; border-radius: 8px;
+      background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      max-width: 100%; max-height: calc(100vh - 140px); object-fit: contain;
+    }
+    .touch-bar {
+      display: flex; gap: 8px; justify-content: center; align-items: center;
+      width: 100%; max-width: 440px; padding: 6px 8px; flex-shrink: 0;
+    }
+    .t-btn {
+      touch-action: manipulation; cursor: pointer; pointer-events: auto; position: relative; z-index: 100;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; font-size: 16px; font-weight: bold;
+      border-radius: 12px; height: 50px; flex: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .t-btn:active { background: rgba(255,255,255,0.35); }
+    .fire-btn { background: rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.7); color: #ffffff; }
+    .fire-btn:active { background: rgba(239, 68, 68, 0.6); }
+    .thrust-btn { background: rgba(56, 189, 248, 0.4); border-color: rgba(56, 189, 248, 0.7); color: #ffffff; }
+    .thrust-btn:active { background: rgba(56, 189, 248, 0.6); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="hud">
+      <div style="color: #38bdf8;">SCORE: <span id="score">0</span></div>
+      <div style="color: #f43f5e;">LIVES: <span id="lives">🚀🚀🚀</span></div>
+      <div style="color: #fbbf24;">BEST: <span id="best">0</span></div>
+    </div>
+    <canvas id="canvas" width="440" height="460"></canvas>
+  </div>
+
+  <div class="touch-bar">
+    <button class="t-btn" id="btn-left">↺</button>
+    <button class="t-btn thrust-btn" id="btn-thrust">🚀 THRUST</button>
+    <button class="t-btn" id="btn-right">↻</button>
+    <button class="t-btn fire-btn" id="btn-fire">💥</button>
+  </div>
+
+  <script>
+    (function() {
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+      var scoreEl = document.getElementById('score');
+      var livesEl = document.getElementById('lives');
+      var bestEl = document.getElementById('best');
+
+      var W = 440, H = 460;
+      var ship = { x: W / 2, y: H / 2, r: 10, a: -Math.PI / 2, rot: 0, thrusting: false, vx: 0, vy: 0 };
+      var lasers = [], asteroids = [], particles = [];
+      var score = 0, lives = 3, best = parseInt(localStorage.getItem('asteroids_best') || '0', 10);
+      bestEl.textContent = best;
+      var gameState = 'idle';
+
+      function spawnAsteroids(count) {
+        for (var i = 0; i < count; i++) {
+          var x, y;
+          do { x = Math.random() * W; y = Math.random() * H; } while (Math.hypot(x - ship.x, y - ship.y) < 100);
+          asteroids.push({ x: x, y: y, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3, r: 30, size: 3 });
+        }
+      }
+
+      function reset() {
+        ship.x = W / 2; ship.y = H / 2; ship.vx = 0; ship.vy = 0; ship.a = -Math.PI / 2;
+        lasers = []; asteroids = []; particles = [];
+        score = 0; lives = 3; scoreEl.textContent = '0';
+        updateLives();
+        spawnAsteroids(4);
+        gameState = 'playing';
+      }
+
+      function updateLives() {
+        var l = ''; for (var i = 0; i < lives; i++) l += '🚀';
+        livesEl.textContent = l || 'NONE';
+      }
+
+      function update() {
+        if (gameState !== 'playing') return;
+
+        ship.a += ship.rot;
+        if (ship.thrusting) {
+          ship.vx += Math.cos(ship.a) * 0.18;
+          ship.vy += Math.sin(ship.a) * 0.18;
+        } else {
+          ship.vx *= 0.98; ship.vy *= 0.98;
+        }
+
+        ship.x = (ship.x + ship.vx + W) % W;
+        ship.y = (ship.y + ship.vy + H) % H;
+
+        for (var i = lasers.length - 1; i >= 0; i--) {
+          var l = lasers[i];
+          l.x += l.vx; l.y += l.vy; l.life--;
+          if (l.life <= 0 || l.x < 0 || l.x > W || l.y < 0 || l.y > H) { lasers.splice(i, 1); continue; }
+
+          for (var j = asteroids.length - 1; j >= 0; j--) {
+            var a = asteroids[j];
+            if (Math.hypot(l.x - a.x, l.y - a.y) < a.r) {
+              score += a.size === 3 ? 20 : a.size === 2 ? 50 : 100;
+              scoreEl.textContent = score;
+              if (score > best) { best = score; bestEl.textContent = best; localStorage.setItem('asteroids_best', best); }
+
+              if (a.size > 1) {
+                asteroids.push({ x: a.x, y: a.y, vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4, r: a.r / 2, size: a.size - 1 });
+                asteroids.push({ x: a.x, y: a.y, vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4, r: a.r / 2, size: a.size - 1 });
+              }
+
+              for (var p = 0; p < 10; p++) {
+                particles.push({ x: a.x, y: a.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 20 });
+              }
+              asteroids.splice(j, 1); lasers.splice(i, 1); break;
+            }
+          }
+        }
+
+        asteroids.forEach(function(a) {
+          a.x = (a.x + a.vx + W) % W; a.y = (a.y + a.vy + H) % H;
+          if (Math.hypot(ship.x - a.x, ship.y - a.y) < ship.r + a.r) {
+            lives--; updateLives();
+            if (lives <= 0) gameState = 'dead';
+            else { ship.x = W / 2; ship.y = H / 2; ship.vx = 0; ship.vy = 0; }
+          }
+        });
+
+        if (asteroids.length === 0) spawnAsteroids(5);
+
+        for (var k = particles.length - 1; k >= 0; k--) {
+          var pt = particles[k]; pt.x += pt.vx; pt.y += pt.vy; pt.life--;
+          if (pt.life <= 0) particles.splice(k, 1);
+        }
+      }
+
+      function draw() {
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+
+        ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(ship.x + ship.r * Math.cos(ship.a), ship.y + ship.r * Math.sin(ship.a));
+        ctx.lineTo(ship.x - ship.r * (Math.cos(ship.a) + Math.sin(ship.a)), ship.y - ship.r * (Math.sin(ship.a) - Math.cos(ship.a)));
+        ctx.lineTo(ship.x - ship.r * (Math.cos(ship.a) - Math.sin(ship.a)), ship.y - ship.r * (Math.sin(ship.a) + Math.cos(ship.a)));
+        ctx.closePath(); ctx.stroke();
+
+        ctx.fillStyle = '#ef4444';
+        lasers.forEach(function(l) { ctx.beginPath(); ctx.arc(l.x, l.y, 2, 0, Math.PI * 2); ctx.fill(); });
+
+        ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 1.5;
+        asteroids.forEach(function(a) { ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2); ctx.stroke(); });
+
+        ctx.fillStyle = '#f59e0b';
+        particles.forEach(function(pt) { ctx.fillRect(pt.x, pt.y, 2, 2); });
+
+        if (gameState === 'idle' || gameState === 'dead') {
+          ctx.fillStyle = 'rgba(5, 5, 8, 0.88)'; ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = gameState === 'dead' ? '#ef4444' : '#38bdf8';
+          ctx.font = 'bold 26px monospace'; ctx.textAlign = 'center';
+          ctx.fillText(gameState === 'dead' ? 'GAME OVER' : 'ASTEROIDS 2D', W / 2, H / 2 - 20);
+          ctx.font = '13px monospace'; ctx.fillStyle = '#9ca3af';
+          ctx.fillText('Tap Buttons or Canvas to Play', W / 2, H / 2 + 20);
+        }
+      }
+
+      function shoot() {
+        if (gameState !== 'playing') { reset(); return; }
+        lasers.push({ x: ship.x + ship.r * Math.cos(ship.a), y: ship.y + ship.r * Math.sin(ship.a), vx: Math.cos(ship.a) * 7, vy: Math.sin(ship.a) * 7, life: 40 });
+      }
+
+      function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+      function bindPress(id, onStart, onEnd) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var start = function(e) { e.preventDefault(); if (gameState !== 'playing') reset(); else onStart(); };
+        var end = function(e) { e.preventDefault(); if (onEnd) onEnd(); };
+        el.addEventListener('pointerdown', start);
+        el.addEventListener('pointerup', end);
+        el.addEventListener('pointerleave', end);
+        el.addEventListener('click', start);
+      }
+
+      bindPress('btn-left', function() { ship.rot = -0.1; }, function() { ship.rot = 0; });
+      bindPress('btn-right', function() { ship.rot = 0.1; }, function() { ship.rot = 0; });
+      bindPress('btn-thrust', function() { ship.thrusting = true; }, function() { ship.thrusting = false; });
+      bindPress('btn-fire', shoot);
+
+      canvas.addEventListener('pointerdown', function(e) { if (gameState !== 'playing') reset(); });
+
+      spawnAsteroids(4);
+      loop();
+    })();
+  </script>
+</body>
+</html>

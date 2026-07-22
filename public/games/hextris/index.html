@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Hextris</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #0d1117; color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    canvas { touch-action: none; }
+    .canvas-container {
+      position: relative; width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #canvas { display: block; max-width: 100vw; max-height: 100vh; object-fit: contain; }
+    .overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(13, 17, 23, 0.88); backdrop-filter: blur(4px); z-index: 50;
+    }
+    .overlay h1 { font-size: 38px; font-weight: 900; margin-bottom: 8px; color: #f43f5e; }
+    .overlay p { font-size: 13px; color: #94a3b8; margin-bottom: 20px; text-align: center; max-width: 280px; }
+    .btn {
+      touch-action: manipulation; cursor: pointer; pointer-events: auto; position: relative; z-index: 100;
+      background: #f43f5e; color: #fff; font-size: 15px; font-weight: 700;
+      padding: 12px 32px; border-radius: 12px; border: none;
+      box-shadow: 0 4px 14px rgba(244,63,94,0.4); transition: all 0.2s;
+    }
+    .btn:active { background: #e11d48; transform: scale(0.96); }
+    .score-hud {
+      position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+      text-align: center; pointer-events: none; z-index: 10;
+    }
+    .score-num { font-size: 32px; font-weight: 900; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+    .high-score { font-size: 11px; color: #94a3b8; font-weight: 700; margin-top: 2px; }
+    .controls-tip {
+      position: absolute; bottom: 12px; font-size: 11px; color: #64748b;
+      text-align: center; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas-container">
+    <div class="score-hud">
+      <div class="score-num" id="score">0</div>
+      <div class="high-score">BEST <span id="best">0</span></div>
+    </div>
+
+    <canvas id="canvas" width="480" height="600"></canvas>
+
+    <div class="overlay" id="start-screen">
+      <h1>HEXTRIS</h1>
+      <p>Rotate the hexagon to match 3 or more colored blocks!</p>
+      <button class="btn" id="start-btn">PLAY NOW</button>
+    </div>
+
+    <div class="controls-tip">Use ◄ ► Arrow Keys or Tap Left/Right of screen</div>
+  </div>
+
+  <script>
+    (function() {
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+      var startScreen = document.getElementById('start-screen');
+      var startBtn = document.getElementById('start-btn');
+      var scoreEl = document.getElementById('score');
+      var bestEl = document.getElementById('best');
+
+      var W = 480, H = 600, CX = W / 2, CY = H / 2, HEX_RADIUS = 75;
+      var COLORS = ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#a855f7', '#ec4899'];
+
+      var hexAngle = 0, hexTargetAngle = 0;
+      var blocks = [];
+      var score = 0, best = parseInt(localStorage.getItem('hextris_best') || '0', 10);
+      bestEl.textContent = best;
+      var running = false, spawnTimer = 0, spawnInterval = 90;
+
+      function reset() {
+        blocks = []; hexAngle = 0; hexTargetAngle = 0;
+        score = 0; scoreEl.textContent = '0';
+        spawnInterval = 90; spawnTimer = 0;
+        running = true;
+        startScreen.style.display = 'none';
+      }
+
+      function spawnBlock() {
+        var side = Math.floor(Math.random() * 6);
+        var color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        blocks.push({ side: side, dist: 240, speed: 2.2, color: color, lane: side });
+      }
+
+      function update() {
+        if (!running) return;
+
+        hexAngle += (hexTargetAngle - hexAngle) * 0.25;
+
+        spawnTimer++;
+        if (spawnTimer >= spawnInterval) {
+          spawnBlock(); spawnTimer = 0;
+          spawnInterval = Math.max(40, spawnInterval - 0.5);
+        }
+
+        for (var i = blocks.length - 1; i >= 0; i--) {
+          var b = blocks[i];
+          b.dist -= b.speed;
+
+          if (b.dist <= HEX_RADIUS + 12) {
+            score += 10; scoreEl.textContent = score;
+            if (score > best) { best = score; bestEl.textContent = best; localStorage.setItem('hextris_best', best); }
+            blocks.splice(i, 1);
+            if (blocks.length > 25) { running = false; showGameOver(); }
+          }
+        }
+      }
+
+      function showGameOver() {
+        startScreen.style.display = 'flex';
+        startScreen.querySelector('h1').textContent = 'GAME OVER';
+        startScreen.querySelector('p').textContent = 'Final Score: ' + score;
+        startBtn.textContent = 'PLAY AGAIN';
+      }
+
+      function draw() {
+        ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+
+        ctx.save(); ctx.translate(CX, CY); ctx.rotate(hexAngle);
+        ctx.strokeStyle = '#334155'; ctx.lineWidth = 4;
+        ctx.beginPath();
+        for (var i = 0; i < 6; i++) {
+          var a = (i * Math.PI) / 3;
+          var x = HEX_RADIUS * Math.cos(a), y = HEX_RADIUS * Math.sin(a);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath(); ctx.stroke();
+
+        for (var k = 0; k < blocks.length; k++) {
+          var b = blocks[k];
+          var a1 = (b.side * Math.PI) / 3, a2 = ((b.side + 1) * Math.PI) / 3;
+          ctx.fillStyle = b.color; ctx.beginPath();
+          ctx.moveTo(b.dist * Math.cos(a1), b.dist * Math.sin(a1));
+          ctx.lineTo(b.dist * Math.cos(a2), b.dist * Math.sin(a2));
+          ctx.lineTo((b.dist + 14) * Math.cos(a2), (b.dist + 14) * Math.sin(a2));
+          ctx.lineTo((b.dist + 14) * Math.cos(a1), (b.dist + 14) * Math.sin(a1));
+          ctx.closePath(); ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+      function handleStart(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        reset();
+      }
+
+      startBtn.addEventListener('pointerdown', handleStart);
+      startBtn.addEventListener('click', handleStart);
+
+      window.addEventListener('keydown', function(e) {
+        if (!running) return;
+        if (e.key === 'ArrowLeft'  || e.key === 'a') hexTargetAngle -= Math.PI / 3;
+        if (e.key === 'ArrowRight' || e.key === 'd') hexTargetAngle += Math.PI / 3;
+      });
+
+      window.addEventListener('pointerdown', function(e) {
+        if (!running || e.target === startBtn) return;
+        var x = e.clientX;
+        if (x < window.innerWidth / 2) hexTargetAngle -= Math.PI / 3;
+        else hexTargetAngle += Math.PI / 3;
+      });
+
+      loop();
+    })();
+  </script>
+</body>
+</html>
