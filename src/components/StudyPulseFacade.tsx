@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, Play, Star, X } from 'lucide-react';
 import { VALID_PASSCODES } from '@/lib/constants';
-import GameViewerModal from './GameViewerModal';
 
 // ── GameZone Catalogue ─────────────────────────────────────────────
 type GameId = 'invaders' | 'asteroids' | 'sinuous' | '2048' | 'hextris' | 'clumsy' | 'tower' | 'pacman' | 'tetris' | 'breakout';
@@ -23,16 +23,16 @@ interface GameEntry {
 }
 
 const GAMES: GameEntry[] = [
-  { id: 'invaders',  title: 'Space Invaders',      desc: 'Classic Space Invaders arcade game. Marching alien grids, laser audio & bunker shields!', icon: '👾', category: 'arcade',   tag: 'Arcade Legend', rating: '5.0', levels: 'Alien Waves', controls: 'Touch Buttons ◄ ► 💥 or Arrow Keys + Space', localPath: '/games/space-invaders/index.html' },
-  { id: 'asteroids', title: 'Asteroids 2D',        desc: 'Vector Asteroids shooter. Newtonian thrust physics, laser cannons & particle explosions!', icon: '🚀', category: 'space',    tag: 'Space Vector', rating: '4.9', levels: 'Wave Progression', controls: 'Touch Buttons ↺ 🚀 ↻ 💥 or Arrow Keys', localPath: '/games/asteroids/index.html' },
-  { id: 'sinuous',   title: 'Sinuous',             desc: 'Particle evasion arcade game. Dodge red dots & capture shield nodes!', icon: '🔴', category: 'arcade',   tag: 'Particle Evasion', rating: '4.9', levels: 'Endless Survival', controls: 'Drag Finger / Mouse to Dodge', localPath: '/games/sinuous/index.html' },
-  { id: '2048',      title: '2048 Official',       desc: 'The official 2048 puzzle game. Join tiles, reach 2048!', icon: '🧩', category: 'puzzle',   tag: 'Official 2048', rating: '5.0', levels: 'High Score', controls: 'Swipe Screen or Arrow Keys', localPath: '/games/2048/index.html' },
-  { id: 'hextris',   title: 'Hextris',             desc: 'Fast-paced hexagonal Tetris puzzle game. Rotate hex to match 3 blocks!', icon: '🔷', category: 'puzzle',   tag: 'Hexagonal Tetris', rating: '4.9', levels: 'Endless Combo', controls: 'Tap Left/Right Screen or Arrow Keys', localPath: '/games/hextris/index.html' },
-  { id: 'clumsy',    title: 'Clumsy Bird',         desc: 'Flappy Bird canvas runner. Fly past pipes & set high scores!', icon: '🐤', category: 'arcade',   tag: 'Flappy Bird', rating: '4.8', levels: 'High Score', controls: 'Tap Screen or Spacebar to Flap', localPath: '/games/clumsy-bird/index.html' },
-  { id: 'tower',     title: 'Tower Stack',         desc: 'Physics tower stacking game. Precise timing & color themes.', icon: '🏗️', category: 'arcade',   tag: 'Tower Physics', rating: '4.9', levels: 'Endless Stack', controls: 'Tap Screen or Spacebar to Drop', localPath: '/games/tower/index.html' },
-  { id: 'pacman',    title: 'Pac-Man HTML5',       desc: 'Classic Pac-Man. Navigate mazes, eat dots & outsmart 4 ghost AIs!', icon: '👻', category: 'retro',    tag: 'Classic Arcade', rating: '5.0', levels: 'Arcade Stages', controls: 'D-Pad ▲ ◄ ► ▼ or Arrow Keys', localPath: '/games/pacman/index.html' },
-  { id: 'tetris',    title: 'Classic Tetris',      desc: 'Popular HTML5 Tetris. Clear lines, preview next pieces, and level up!', icon: '🧱', category: 'puzzle',   tag: 'Classic Tetris', rating: '4.9', levels: 'Speed Levels', controls: 'Touch Buttons ◄ 🔄 ⬇ ► or Arrow Keys', localPath: '/games/tetris/index.html' },
-  { id: 'breakout',  title: 'Breakout Deluxe',     desc: 'Classic Breakout brick breaker. Destroy bricks, catch power-ups!', icon: '⚡', category: 'retro',    tag: 'Breakout', rating: '4.7', levels: 'Brick Stages', controls: 'Drag Paddle / Mouse or Arrow Keys', localPath: '/games/breakout/index.html' },
+  { id: 'invaders',  title: 'Space Invaders',      desc: 'Classic Space Invaders arcade game. Marching alien grids, laser audio & bunker shields!', icon: '👾', category: 'arcade',   tag: 'Arcade Legend', rating: '5.0', levels: 'Alien Waves', controls: 'Touch Buttons ◄ ► 💥 or Arrow Keys + Space', localPath: '/games/space-invaders' },
+  { id: 'asteroids', title: 'Asteroids 2D',        desc: 'Vector Asteroids shooter. Newtonian thrust physics, laser cannons & particle explosions!', icon: '🚀', category: 'space',    tag: 'Space Vector', rating: '4.9', levels: 'Wave Progression', controls: 'Touch Buttons ↺ 🚀 ↻ 💥 or Arrow Keys', localPath: '/games/asteroids' },
+  { id: 'sinuous',   title: 'Sinuous',             desc: 'Particle evasion arcade game. Dodge red dots & capture shield nodes!', icon: '🔴', category: 'arcade',   tag: 'Particle Evasion', rating: '4.9', levels: 'Endless Survival', controls: 'Drag Finger / Mouse to Dodge', localPath: '/games/sinuous' },
+  { id: '2048',      title: '2048 Official',       desc: 'The official 2048 puzzle game. Join tiles, reach 2048!', icon: '🧩', category: 'puzzle',   tag: 'Official 2048', rating: '5.0', levels: 'High Score', controls: 'Swipe Screen or Arrow Keys', localPath: '/games/2048' },
+  { id: 'hextris',   title: 'Hextris',             desc: 'Fast-paced hexagonal Tetris puzzle game. Rotate hex to match 3 blocks!', icon: '🔷', category: 'puzzle',   tag: 'Hexagonal Tetris', rating: '4.9', levels: 'Endless Combo', controls: 'Tap Left/Right Screen or Arrow Keys', localPath: '/games/hextris' },
+  { id: 'clumsy',    title: 'Clumsy Bird',         desc: 'Flappy Bird canvas runner. Fly past pipes & set high scores!', icon: '🐤', category: 'arcade',   tag: 'Flappy Bird', rating: '4.8', levels: 'High Score', controls: 'Tap Screen or Spacebar to Flap', localPath: '/games/clumsy-bird' },
+  { id: 'tower',     title: 'Tower Stack',         desc: 'Physics tower stacking game. Precise timing & color themes.', icon: '🏗️', category: 'arcade',   tag: 'Tower Physics', rating: '4.9', levels: 'Endless Stack', controls: 'Tap Screen or Spacebar to Drop', localPath: '/games/tower' },
+  { id: 'pacman',    title: 'Pac-Man HTML5',       desc: 'Classic Pac-Man. Navigate mazes, eat dots & outsmart 4 ghost AIs!', icon: '👻', category: 'retro',    tag: 'Classic Arcade', rating: '5.0', levels: 'Arcade Stages', controls: 'D-Pad ▲ ◄ ► ▼ or Arrow Keys', localPath: '/games/pacman' },
+  { id: 'tetris',    title: 'Classic Tetris',      desc: 'Popular HTML5 Tetris. Clear lines, preview next pieces, and level up!', icon: '🧱', category: 'puzzle',   tag: 'Classic Tetris', rating: '4.9', levels: 'Speed Levels', controls: 'Touch Buttons ◄ 🔄 ⬇ ► or Arrow Keys', localPath: '/games/tetris' },
+  { id: 'breakout',  title: 'Breakout Deluxe',     desc: 'Classic Breakout brick breaker. Destroy bricks, catch power-ups!', icon: '⚡', category: 'retro',    tag: 'Breakout', rating: '4.7', levels: 'Brick Stages', controls: 'Drag Paddle / Mouse or Arrow Keys', localPath: '/games/breakout' },
 ];
 
 const CATEGORIES: { id: Category; label: string }[] = [
@@ -49,6 +49,7 @@ interface StudyPulseFacadeProps {
 }
 
 export default function StudyPulseFacade({ onSecretTriggered }: StudyPulseFacadeProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<Category>('all');
   const [activeGame, setActiveGame] = useState<GameId | null>(null);
@@ -120,20 +121,6 @@ export default function StudyPulseFacade({ onSecretTriggered }: StudyPulseFacade
     return GAMES.filter((g) => g.category === catId).length;
   };
 
-  const selectedGameEntry = GAMES.find((g) => g.id === activeGame);
-
-  // ── Active game viewer modal ──────────────────────
-  if (activeGame && selectedGameEntry) {
-    return (
-      <GameViewerModal
-        title={selectedGameEntry.title}
-        gamePath={selectedGameEntry.localPath}
-        controlsInfo={selectedGameEntry.controls}
-        onBack={() => setActiveGame(null)}
-      />
-    );
-  }
-
   // ── Game Hub Portal ───────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-10 bg-[#0d1117] text-zinc-100 flex flex-col font-sans overflow-hidden select-none pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
@@ -173,7 +160,7 @@ export default function StudyPulseFacade({ onSecretTriggered }: StudyPulseFacade
           {/* Featured banner — Space Invaders */}
           <div
             className="relative overflow-hidden rounded-2xl bg-linear-to-r from-emerald-600 to-teal-700 border border-emerald-500/40 p-5 flex items-center justify-between cursor-pointer hover:from-emerald-500 hover:to-teal-600 transition group shadow-lg"
-            onClick={() => { window.location.href = '/games/space-invaders/index.html'; }}
+            onClick={() => router.push('/games/space-invaders')}
           >
             <div>
               <span className="text-[10px] font-bold text-emerald-200 uppercase tracking-wider mb-1 block">🔥 Featured Arcade Legend</span>
@@ -212,7 +199,7 @@ export default function StudyPulseFacade({ onSecretTriggered }: StudyPulseFacade
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((game) => (
               <div key={game.id}
-                onClick={() => { window.location.href = game.localPath; }}
+                onClick={() => router.push(game.localPath)}
                 className="bg-[#161b22] border border-zinc-800 rounded-2xl p-5 hover:border-zinc-700 hover:bg-[#1a2030] transition duration-200 flex flex-col justify-between group shadow-sm hover:shadow-lg cursor-pointer"
               >
                 <div>

@@ -1,16 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Maximize2, Minimize2, RefreshCw, HelpCircle, X } from 'lucide-react';
 
 interface GameViewerModalProps {
   title: string;
   gamePath: string; // e.g. /games/2048/index.html
   controlsInfo?: string;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export default function GameViewerModal({ title, gamePath, controlsInfo, onBack }: GameViewerModalProps) {
+  const router = useRouter();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [key, setKey] = useState(0);
   const [showControlsDrawer, setShowControlsDrawer] = useState(false);
@@ -23,16 +25,24 @@ export default function GameViewerModal({ title, gamePath, controlsInfo, onBack 
     setKey((prev) => prev + 1);
   };
 
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      router.push('/');
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col w-screen h-dvh bg-[#0d1117] text-white overflow-hidden select-none pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
+    <div className="flex flex-col w-full h-full bg-[#0d1117] text-white overflow-hidden select-none pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       {/* Top Controls Header */}
       <div className="shrink-0 flex items-center justify-between px-3 py-2 bg-[#161b22] border-b border-zinc-800 z-10 shadow-md">
         <button
-          onClick={onBack}
+          onClick={handleBack}
           className="flex items-center gap-1 text-xs text-zinc-300 active:text-white bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-xl transition border border-zinc-700/50 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="font-medium">Back</span>
+          <span className="font-medium">Games</span>
         </button>
 
         <div className="text-center px-2">
