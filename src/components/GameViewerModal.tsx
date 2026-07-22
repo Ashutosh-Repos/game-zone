@@ -37,56 +37,64 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
 
   return (
     <div className="flex flex-col w-full h-full bg-[#0d1117] text-white overflow-hidden select-none pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
-      {/* Top Controls Header */}
-      <div className="shrink-0 flex items-center justify-between px-3 py-2 bg-[#161b22] border-b border-zinc-800 z-10 shadow-md">
+      {/* Top Glassmorphic Controls Header */}
+      <div className="shrink-0 flex items-center justify-between px-3 sm:px-4 py-2.5 bg-[#161b22]/90 backdrop-blur-md border-b border-zinc-800/80 z-10 shadow-xl">
         <button
           onClick={handleBack}
-          className="flex items-center gap-1 text-xs text-zinc-300 active:text-white bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-xl transition border border-zinc-700/50 cursor-pointer"
+          className="flex items-center gap-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white border border-indigo-500/40 px-3.5 py-1.5 rounded-xl transition text-xs font-bold shadow-sm active:scale-95 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="font-medium">Games</span>
+          <span>Back to Games</span>
         </button>
 
-        <div className="text-center px-2">
-          <h2 className="font-bold text-xs sm:text-sm text-white tracking-wide truncate max-w-40 sm:max-w-xs">{title}</h2>
-          <p className="text-[9px] text-emerald-400 font-medium">HTML5 Web Game</p>
+        <div className="text-center px-2 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-xs shadow-emerald-400/50" />
+          <div>
+            <h2 className="font-black text-xs sm:text-sm text-white tracking-wide truncate max-w-36 sm:max-w-xs">{title}</h2>
+          </div>
+          <span className="hidden md:inline-block text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase tracking-wider">
+            HTML5 Arcade
+          </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => setShowControlsDrawer(!showControlsDrawer)}
             title="How to Play / Controls"
-            className="p-2 bg-zinc-800 active:bg-zinc-700 rounded-xl transition text-indigo-400 active:text-indigo-200 border border-zinc-700/50 cursor-pointer"
+            className="flex items-center gap-1 bg-zinc-800/80 hover:bg-zinc-700/80 text-indigo-400 hover:text-indigo-300 border border-zinc-700/60 px-2.5 sm:px-3 py-1.5 rounded-xl transition text-xs font-semibold shadow-sm active:scale-95 cursor-pointer"
           >
             <HelpCircle className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Controls</span>
           </button>
           <button
             onClick={handleRefresh}
             title="Restart Game"
-            className="p-2 bg-zinc-800 active:bg-zinc-700 rounded-xl transition text-zinc-400 active:text-white border border-zinc-700/50 cursor-pointer"
+            className="flex items-center gap-1 bg-zinc-800/80 hover:bg-zinc-700/80 text-amber-400 hover:text-amber-300 border border-zinc-700/60 px-2.5 sm:px-3 py-1.5 rounded-xl transition text-xs font-semibold shadow-sm active:scale-95 cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Restart</span>
           </button>
           <button
             onClick={toggleFullscreen}
             title="Toggle Fullscreen"
-            className="p-2 bg-zinc-800 active:bg-zinc-700 rounded-xl transition text-zinc-400 active:text-white border border-zinc-700/50 cursor-pointer"
+            className="flex items-center gap-1 bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-300 hover:text-white border border-zinc-700/60 px-2.5 sm:px-3 py-1.5 rounded-xl transition text-xs font-semibold shadow-sm active:scale-95 cursor-pointer"
           >
             {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            <span className="hidden md:inline">{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
           </button>
         </div>
       </div>
 
       {/* Controls Guide Drawer */}
       {showControlsDrawer && (
-        <div className="bg-[#161b22] border-b border-indigo-500/30 px-4 py-3 text-xs text-zinc-200 flex items-center justify-between z-20 animate-fade-in shadow-lg">
+        <div className="bg-[#161b22] border-b border-indigo-500/40 px-4 py-3 text-xs text-zinc-200 flex items-center justify-between z-20 animate-fade-in shadow-xl">
           <div className="flex items-center gap-2">
-            <span className="text-indigo-400 font-bold">🎮 Controls:</span>
-            <span className="text-zinc-300 font-medium">{controlsInfo || 'Use Onscreen Touch Buttons or Arrow Keys'}</span>
+            <span className="text-indigo-400 font-bold">🎮 Game Controls:</span>
+            <span className="text-zinc-300 font-medium">{controlsInfo || 'Use Onscreen Touch Buttons or Keyboard Arrow Keys'}</span>
           </div>
           <button
             onClick={() => setShowControlsDrawer(false)}
-            className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition"
+            className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -110,10 +118,19 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
         )}
       </div>
 
-      {/* Bottom Footer */}
+      {/* Premium Bottom Footer */}
       {!isFullscreen && (
-        <footer className="shrink-0 py-1.5 px-3 bg-[#161b22] border-t border-zinc-800 text-center text-[10px] text-zinc-500 font-medium">
-          🎮 GameZone HTML5 • Server-Rendered Arcade Engine
+        <footer className="shrink-0 py-2 px-4 bg-[#161b22]/90 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400 font-medium z-10 shadow-inner">
+          <div className="flex items-center gap-2">
+            <span className="text-sm select-none">🕹️</span>
+            <span className="font-bold text-zinc-200 tracking-tight">GameZone Arcade Engine</span>
+            <span className="text-zinc-600 hidden sm:inline">•</span>
+            <span className="text-emerald-400 font-semibold hidden sm:inline">Server-Rendered HTML5</span>
+          </div>
+          <div className="flex items-center gap-2 text-zinc-500 text-[10px]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Zero Latency • Live</span>
+          </div>
         </footer>
       )}
     </div>
