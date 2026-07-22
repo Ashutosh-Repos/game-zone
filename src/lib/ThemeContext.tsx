@@ -101,11 +101,11 @@ export function ThemeToggle({ className = '', style }: { className?: string; sty
       type="button"
       title={`Switch to ${resolvedTheme === 'dark' ? 'Light' : 'Dark'} Mode`}
       aria-label="Toggle Theme"
-      style={style}
-      className={`p-2 rounded-xl transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center shrink-0 ${
+      style={{ padding: 8, ...style }}
+      className={`rounded-xl transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center shrink-0 ${
         resolvedTheme === 'dark'
           ? 'bg-[#161b22]/90 hover:bg-zinc-800 text-amber-400 hover:text-amber-300 border border-zinc-700/80 shadow-md'
-          : 'bg-slate-100 hover:bg-slate-200 text-indigo-600 border border-slate-300 shadow-xs'
+          : 'bg-white hover:bg-slate-100 text-indigo-600 border border-slate-300 shadow-xs'
       } ${className}`}
     >
       {resolvedTheme === 'dark' ? (

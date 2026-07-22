@@ -117,7 +117,7 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
           </button>
 
           {/* Theme Toggle Button */}
-          <ThemeToggle />
+          <ThemeToggle style={{ padding: 8 }} />
         </div>
       </div>
 
