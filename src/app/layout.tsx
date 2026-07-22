@@ -25,6 +25,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <meta name="color-scheme" content="light dark" />
+        <meta name="supported-color-schemes" content="light dark" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -32,12 +34,15 @@ export default function RootLayout({
                 try {
                   var saved = localStorage.getItem('arcadezone_theme');
                   var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  if (saved === 'dark' || (!saved && supportDarkMode) || saved !== 'light') {
+                  var isDark = saved === 'dark' || (!saved && supportDarkMode) || saved !== 'light';
+                  if (isDark) {
                     document.documentElement.classList.add('dark');
                     document.documentElement.classList.remove('light');
+                    document.documentElement.style.colorScheme = 'dark';
                   } else {
                     document.documentElement.classList.remove('dark');
                     document.documentElement.classList.add('light');
+                    document.documentElement.style.colorScheme = 'light';
                   }
                 } catch (e) {}
               })();
