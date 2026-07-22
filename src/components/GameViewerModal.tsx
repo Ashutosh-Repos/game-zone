@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Maximize2, Minimize2, RefreshCw, HelpCircle, X } from 'lucide-react';
+import ShadowGameContainer from './ShadowGameContainer';
 
 interface GameViewerModalProps {
   title: string;
-  gamePath: string; // e.g. /games/2048/index.html
+  gamePath?: string; // e.g. /games/2048/index.html
+  gameHtml?: string; // Server-ingested HTML string
   controlsInfo?: string;
   onBack?: () => void;
 }
 
-export default function GameViewerModal({ title, gamePath, controlsInfo, onBack }: GameViewerModalProps) {
+export default function GameViewerModal({ title, gamePath, gameHtml, controlsInfo, onBack }: GameViewerModalProps) {
   const router = useRouter();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [key, setKey] = useState(0);
@@ -91,18 +93,30 @@ export default function GameViewerModal({ title, gamePath, controlsInfo, onBack 
         </div>
       )}
 
-      {/* Embedded Game Viewer */}
+      {/* Embedded Game Container */}
       <div className={`flex-1 min-h-0 overflow-hidden relative flex items-center justify-center bg-[#090d16] ${isFullscreen ? 'p-0' : 'p-1 sm:p-3'}`}>
-        <iframe
-          key={key}
-          src={gamePath}
-          title={title}
-          className={`w-full h-full border-0 transition-all duration-200 ${
-            isFullscreen ? 'rounded-none' : 'rounded-xl shadow-2xl'
-          }`}
-          allow="autoplay; keyboard"
-        />
+        {gameHtml ? (
+          <ShadowGameContainer key={key} htmlContent={gameHtml} isFullscreen={isFullscreen} />
+        ) : (
+          <iframe
+            key={key}
+            src={gamePath}
+            title={title}
+            className={`w-full h-full border-0 transition-all duration-200 ${
+              isFullscreen ? 'rounded-none' : 'rounded-xl shadow-2xl'
+            }`}
+            allow="autoplay; keyboard"
+          />
+        )}
       </div>
+
+      {/* Bottom Footer */}
+      {!isFullscreen && (
+        <footer className="shrink-0 py-1.5 px-3 bg-[#161b22] border-t border-zinc-800 text-center text-[10px] text-zinc-500 font-medium">
+          🎮 GameZone HTML5 • Server-Rendered Arcade Engine
+        </footer>
+      )}
     </div>
   );
 }
+

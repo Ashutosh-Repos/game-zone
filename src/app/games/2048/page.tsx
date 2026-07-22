@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import fs from 'fs';
+import path from 'path';
 import GameViewerModal from '@/components/GameViewerModal';
 
 export const metadata: Metadata = {
@@ -7,9 +9,13 @@ export const metadata: Metadata = {
 };
 
 export default function Game2048Page() {
+  const filePath = path.join(process.cwd(), 'public/games/2048/index.html');
+  const gameHtml = fs.readFileSync(filePath, 'utf8');
+
   return (
     <GameViewerModal
       title="2048 Official"
+      gameHtml={gameHtml}
       gamePath="/games/2048/index.html"
       controlsInfo="Swipe Screen or Arrow Keys"
     />
