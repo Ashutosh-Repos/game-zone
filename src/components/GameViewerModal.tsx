@@ -104,68 +104,45 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
         </div>
       </div>
 
-      {/* Enhanced Floating Glassmorphic Controls & Pro Tips Drawer */}
+      {/* Simple White Glassmorphism Floating Tips Modal */}
       {showControlsDrawer && (
-        <div className="fixed top-16 left-4 right-4 sm:top-20 sm:left-auto sm:right-6 sm:w-96 z-50 bg-[#161b22]/75 backdrop-blur-2xl border border-white/15 p-4 sm:p-5 rounded-2xl shadow-2xl shadow-black/90 animate-fade-in text-zinc-100 max-h-[80vh] overflow-y-auto">
+        <div className="fixed top-16 left-4 right-4 sm:top-20 sm:left-auto sm:right-6 sm:w-96 z-50 bg-black/40 backdrop-blur-md border border-white/20 p-5 rounded-2xl shadow-2xl animate-fade-in text-white max-h-[80vh] overflow-y-auto font-sans">
           {/* Header Bar */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3.5">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400 shrink-0 shadow-inner">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-extrabold text-sm text-white truncate font-display">{title}</h3>
-                <p className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase">Arcade Guide &amp; Tips</p>
-              </div>
-            </div>
+          <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+            <h3 className="font-bold text-sm sm:text-base text-white tracking-wide">{title} — Tips</h3>
             <button
               onClick={() => setShowControlsDrawer(false)}
-              className="p-2 hover:bg-white/10 active:bg-white/20 rounded-xl text-zinc-400 hover:text-white transition cursor-pointer shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"
-              title="Close Guide"
+              className="p-1.5 hover:bg-white/10 rounded-lg text-zinc-300 hover:text-white transition cursor-pointer"
+              title="Close"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="space-y-3 text-xs sm:text-sm">
-            {/* Controls Input Card */}
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-3 flex items-start gap-2.5">
-              <Keyboard className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <div className="text-[10px] font-mono font-bold text-indigo-300 uppercase tracking-widest">Controls &amp; Inputs</div>
-                <p className="text-zinc-200 font-medium leading-relaxed text-xs">
-                  {controlsInfo || 'Use Onscreen Touch Controls or Arrow Keys (W/A/S/D)'}
-                </p>
-              </div>
+          <div className="space-y-4 text-xs sm:text-sm text-zinc-200">
+            {/* Controls */}
+            <div className="space-y-1">
+              <div className="font-semibold text-white text-xs">Controls</div>
+              <p className="text-zinc-300 leading-relaxed">
+                {controlsInfo || 'Use Onscreen Touch Controls or Keyboard Arrow Keys'}
+              </p>
             </div>
 
-            {/* Pro Strategy Tip Card */}
+            {/* Pro Tip */}
             {proTip && (
-              <div className="bg-emerald-950/30 backdrop-blur-md border border-emerald-500/30 rounded-xl p-3 flex items-start gap-2.5">
-                <span className="text-base leading-none shrink-0 mt-0.5">💡</span>
-                <div className="space-y-1">
-                  <div className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-widest">Pro Strategy Tip</div>
-                  <p className="text-emerald-100 font-medium leading-relaxed text-xs">
-                    {proTip}
-                  </p>
-                </div>
+              <div className="space-y-1 pt-3 border-t border-white/10">
+                <div className="font-semibold text-white text-xs">Pro Tip</div>
+                <p className="text-zinc-300 leading-relaxed">
+                  {proTip}
+                </p>
               </div>
             )}
 
-            {/* Keyboard Shortcuts Footer */}
-            <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[10.5px] text-zinc-400 font-mono">
-              <div className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-zinc-200 border border-white/10 font-bold">R</kbd>
-                <span>Restart</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-zinc-200 border border-white/10 font-bold">F</kbd>
-                <span>Fullscreen</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-zinc-200 border border-white/10 font-bold">C</kbd>
-                <span>Toggle</span>
-              </div>
+            {/* Keyboard Shortcuts */}
+            <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-zinc-400">
+              <span><strong className="text-white font-medium">R</strong> Restart</span>
+              <span><strong className="text-white font-medium">F</strong> Fullscreen</span>
+              <span><strong className="text-white font-medium">C</strong> Toggle Tips</span>
             </div>
           </div>
         </div>
