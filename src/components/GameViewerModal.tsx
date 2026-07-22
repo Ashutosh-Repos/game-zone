@@ -104,46 +104,59 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
         </div>
       </div>
 
-      {/* Simple White Glassmorphism Floating Tips Modal */}
+      {/* Glassmorphism Floating Tips Panel */}
       {showControlsDrawer && (
-        <div className="fixed top-20 left-4 right-4 sm:top-22 sm:left-auto sm:right-6 sm:w-96 z-50 bg-[#0d1117]/95 backdrop-blur-2xl border border-white/20 p-5 sm:p-6 rounded-2xl shadow-2xl animate-fade-in text-white max-h-[75vh] overflow-y-auto font-sans">
-          {/* Header Bar */}
-          <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
-            <h3 className="font-bold text-sm sm:text-base text-white tracking-tight">{title} — Tips</h3>
-            <button
-              onClick={() => setShowControlsDrawer(false)}
-              className="p-1.5 hover:bg-white/10 active:bg-white/20 rounded-lg text-zinc-300 hover:text-white transition cursor-pointer"
-              title="Close"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="fixed top-[72px] left-3 right-3 sm:top-[80px] sm:left-auto sm:right-5 sm:w-[400px] z-50 animate-tips-slide-in text-white max-h-[70vh] overflow-y-auto font-sans">
+          <div className="bg-[#0d1117]/90 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] overflow-hidden">
 
-          <div className="space-y-4">
-            {/* Controls */}
-            <div className="space-y-1.5">
-              <div className="font-bold text-xs uppercase tracking-wider text-zinc-400">Controls &amp; Inputs</div>
-              <p className="text-zinc-100 text-xs sm:text-sm font-normal leading-relaxed">
-                {controlsInfo || 'Use Onscreen Touch Controls or Keyboard Arrow Keys'}
-              </p>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5 border-b border-white/10">
+              <h3 className="font-bold text-sm sm:text-base text-white tracking-tight leading-none">{title} — Tips</h3>
+              <button
+                onClick={() => setShowControlsDrawer(false)}
+                className="ml-3 p-2 hover:bg-white/10 active:bg-white/20 rounded-xl text-zinc-400 hover:text-white transition-colors cursor-pointer shrink-0"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Pro Tip */}
-            {proTip && (
-              <div className="space-y-1.5 pt-3.5 border-t border-white/15">
-                <div className="font-bold text-xs uppercase tracking-wider text-emerald-400">Pro Strategy Tip</div>
-                <p className="text-zinc-100 text-xs sm:text-sm font-normal leading-relaxed">
-                  {proTip}
+            {/* Body */}
+            <div className="px-5 py-5 sm:px-6 sm:py-6 space-y-4">
+
+              {/* Controls Card */}
+              <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-4 sm:px-5 sm:py-5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Keyboard className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                  <span className="font-bold text-[11px] uppercase tracking-widest text-zinc-400">Controls</span>
+                </div>
+                <p className="text-zinc-200 text-[13px] sm:text-sm leading-relaxed">
+                  {controlsInfo || 'Use Onscreen Touch Controls or Keyboard Arrow Keys'}
                 </p>
               </div>
-            )}
 
-            {/* Keyboard Shortcuts */}
-            <div className="pt-3.5 border-t border-white/15 flex items-center justify-between text-xs text-zinc-400 font-medium">
-              <span><strong className="text-white font-semibold">R</strong> Restart</span>
-              <span><strong className="text-white font-semibold">F</strong> Fullscreen</span>
-              <span><strong className="text-white font-semibold">C</strong> Toggle Tips</span>
+              {/* Pro Tip Card */}
+              {proTip && (
+                <div className="bg-emerald-500/5 border border-emerald-500/15 rounded-xl px-4 py-4 sm:px-5 sm:py-5 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="font-bold text-[11px] uppercase tracking-widest text-emerald-400">Pro Tip</span>
+                  </div>
+                  <p className="text-zinc-200 text-[13px] sm:text-sm leading-relaxed">
+                    {proTip}
+                  </p>
+                </div>
+              )}
+
             </div>
+
+            {/* Footer — Keyboard Shortcuts */}
+            <div className="px-5 py-3.5 sm:px-6 sm:py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-between text-[11px] sm:text-xs text-zinc-500 font-medium">
+              <span><kbd className="inline-block min-w-[20px] text-center bg-white/10 text-zinc-300 rounded px-1.5 py-0.5 mr-1 font-mono text-[10px]">R</kbd> Restart</span>
+              <span><kbd className="inline-block min-w-[20px] text-center bg-white/10 text-zinc-300 rounded px-1.5 py-0.5 mr-1 font-mono text-[10px]">F</kbd> Fullscreen</span>
+              <span><kbd className="inline-block min-w-[20px] text-center bg-white/10 text-zinc-300 rounded px-1.5 py-0.5 mr-1 font-mono text-[10px]">C</kbd> Toggle</span>
+            </div>
+
           </div>
         </div>
       )}
