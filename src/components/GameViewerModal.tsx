@@ -192,8 +192,8 @@ export default function GameViewerModal({ title, gamePath, gameHtml, controlsInf
         </div>
       )}
 
-      {/* Embedded Game Container — Canvas retains dark retro background */}
-      <div className="w-full h-full relative flex items-center justify-center bg-[#090d16] pt-16 sm:pt-20 pb-4 px-2 sm:px-4">
+      {/* Embedded Game Container — Adaptive background in Light & Dark modes */}
+      <div className="w-full h-full relative flex items-center justify-center bg-slate-100 dark:bg-[#090d16] transition-colors duration-200 pt-16 sm:pt-20 pb-4 px-2 sm:px-4">
         {gameHtml ? (
           <ShadowGameContainer key={key} htmlContent={gameHtml} isFullscreen={true} />
         ) : (

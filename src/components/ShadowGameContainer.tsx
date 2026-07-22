@@ -70,7 +70,7 @@ export default function ShadowGameContainer({ htmlContent, isFullscreen }: Shado
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full flex flex-col items-center justify-center relative bg-[#090d16] ${
+      className={`w-full h-full flex flex-col items-center justify-center relative bg-slate-100 dark:bg-[#090d16] transition-colors duration-200 ${
         isFullscreen ? 'p-0' : 'p-1 sm:p-3'
       }`}
     />

@@ -1041,16 +1041,16 @@ export default function SecretVaultChat({ passcode, onPanicExit }: SecretVaultCh
             S
           </div>
           <div>
-            <h1 className="font-semibold text-sm text-zinc-100">Our Space</h1>
+            <h1 className="font-semibold text-sm text-slate-900 dark:text-zinc-100">Our Space</h1>
             <p className="text-[11px] font-normal leading-none mt-0.5">
               {partnerIsTyping ? (
-                <span className="text-emerald-400 font-medium">typing...</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium">typing...</span>
               ) : partnerIsOnline ? (
-                <span className="text-emerald-400 font-medium">online</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium">online</span>
               ) : isConnected ? (
-                <span className="text-zinc-400 font-normal">offline</span>
+                <span className="text-slate-500 dark:text-zinc-400 font-normal">offline</span>
               ) : (
-                <span className="text-amber-400/90 font-normal">connecting...</span>
+                <span className="text-amber-600 dark:text-amber-400/90 font-normal">connecting...</span>
               )}
             </p>
           </div>
@@ -1120,7 +1120,7 @@ export default function SecretVaultChat({ passcode, onPanicExit }: SecretVaultCh
                 {/* WhatsApp Date Separator Badge */}
                 {showDateHeader && (
                   <div className="flex justify-center my-2.5">
-                    <span className="bg-[#182229] border border-zinc-800/80 text-[10px] text-zinc-400 font-medium px-3 py-0.5 rounded-md shadow-xs">
+                    <span className="bg-white/80 dark:bg-[#182229] border border-slate-300 dark:border-zinc-800/80 text-[10px] text-slate-600 dark:text-zinc-400 font-medium px-3 py-0.5 rounded-md shadow-xs">
                       {formatMessageDateHeader(msg.timestamp)}
                     </span>
                   </div>

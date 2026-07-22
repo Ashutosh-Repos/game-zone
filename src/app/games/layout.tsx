@@ -11,7 +11,7 @@ export default function GamesLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-screen h-dvh bg-[#0d1117] text-white overflow-hidden flex flex-col select-none">
+    <div className="w-screen h-dvh bg-slate-100 dark:bg-[#0d1117] text-slate-900 dark:text-white overflow-hidden flex flex-col select-none transition-colors duration-200">
       {children}
     </div>
   );
